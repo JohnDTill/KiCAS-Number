@@ -1,0 +1,59 @@
+name: C++ Integration Tests
+on: push
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: macos-latest
+            compiler: clang
+          - os: windows-latest
+            compiler: msvc
+          - os: ubuntu-latest
+            compiler: gcc
+            arch: x86
+          - os: ubuntu-latest
+            compiler: clang
+            arch: x86
+          - os: windows-latest
+            compiler: msvc
+            arch: x86
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install and run vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: true
+
+      - name: Configure, Build, and Test
+        shell: bash
+        run: |
+          CMAKE_FLAGS=""
+          if [ "$ARCH" = "x86" ]; then
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              CMAKE_FLAGS="-A Win32"
+            else 
+              CMAKE_FLAGS="-D CMAKE_C_FLAGS=-m32 -D CMAKE_CXX_FLAGS=-m32"
+            fi
+          fi
+
+          VCPKG_ROOT_POSIX=$(wslpath "${VCPKG_ROOT}" 2>/dev/null || echo "${VCPKG_ROOT}")
+          cmake -D CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT_POSIX/scripts/buildsystems/vcpkg.cmake -S . -B build_test $CMAKE_FLAGS
+
+          BUILD_CONFIG_CMAKE=""
+          BUILD_CONFIG_CTEST=""
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            BUILD_CONFIG_CMAKE="--config Debug"
+            BUILD_CONFIG_CTEST="-C Debug"
+          fi
+
+          cmake --build build_test --target IntegrationTests $BUILD_CONFIG_CMAKE
+          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
