@@ -50,7 +50,7 @@ jobs:
           fi
 
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            sudo apt install m4 autoconf automake libtool
+            apt install m4 autoconf automake libtool
           fi
 
           CMAKE_FLAGS=""
