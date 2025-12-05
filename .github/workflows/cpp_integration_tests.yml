@@ -35,6 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Apt dependencies
+        shell: bash
+        run: |
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            apt install m4 autoconf automake libtool
+          fi
+
       - name: Install and run vcpkg
         uses: lukka/run-vcpkg@v11
         with:
@@ -47,10 +54,6 @@ jobs:
             # Force MinGW tools
             export CC=x86_64-w64-mingw32-gcc
             export CXX=x86_64-w64-mingw32-g++
-          fi
-
-          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            apt install m4 autoconf automake libtool
           fi
 
           CMAKE_FLAGS=""
