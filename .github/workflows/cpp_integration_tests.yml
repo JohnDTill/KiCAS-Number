@@ -77,9 +77,6 @@ jobs:
           path: |
             ${GITHUB_WORKSPACE}/build_test/vcpkg_installed
             ~/.cache/vcpkg
-            ${GITHUB_WORKSPACE}/vcpkg/buildtrees
-            ${GITHUB_WORKSPACE}/vcpkg/downloads
-            ${GITHUB_WORKSPACE}/vcpkg/packages
           key: cache-${{ matrix.triplet }}-${{ matrix.compiler }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
             cache-${{ matrix.triplet }}-
