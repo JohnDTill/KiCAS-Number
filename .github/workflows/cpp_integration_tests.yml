@@ -71,16 +71,6 @@ jobs:
         with:
           vcpkgJsonGlob: '${GITHUB_WORKSPACE}/vcpkg.json'
 
-      - name: Cache vcpkg packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${GITHUB_WORKSPACE}/build_test/vcpkg_installed
-            ~/.cache/vcpkg
-          key: cache-${{ matrix.triplet }}-${{ matrix.compiler }}-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            cache-${{ matrix.triplet }}-
-
       - name: Configure, Build, and Test
         shell: bash
         run: |
