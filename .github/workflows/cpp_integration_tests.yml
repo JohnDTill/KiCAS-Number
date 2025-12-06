@@ -1,0 +1,85 @@
+name: C++ Integration Tests
+on: push
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            triplet: x64-linux-dynamic
+          - os: ubuntu-latest
+            compiler: clang
+            triplet: x64-linux-dynamic
+          - os: macos-latest
+            compiler: clang
+            triplet: x64-osx-dynamic
+          # - os: windows-latest
+          #   compiler: mingw
+          #   # triplet: x64-mingw-dynamic  # EVENTUALLY: get dynamic Windows x64 working
+          #   triplet: x64-mingw-static
+          # - os: ubuntu-latest
+          #   compiler: gcc
+          #   arch: x86
+          #   # triplet: x86-linux-dynamic  # EVENTUALLY: get dynamic x86 working
+          #   triplet: x86-linux
+          # - os: ubuntu-latest
+          #   compiler: clang
+          #   arch: x86
+          #   # triplet: x86-linux-dynamic  # EVENTUALLY: get dynamic x86 working
+          #   triplet: x86-linux
+          # - os: windows-latest
+          #   compiler: mingw
+          #   arch: x86
+          #   # triplet: x86-mingw-dynamic  # EVENTUALLY: get dynamic Windows x86 working
+          #   triplet: x86-mingw-static
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Apt dependencies
+        shell: bash
+        run: |
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            brew install m4 autoconf automake libtool
+          fi
+
+      - name: Install and run vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: '${GITHUB_WORKSPACE}/vcpkg.json'
+
+      - name: Configure, Build, and Test
+        shell: bash
+        run: |
+          if [[ "${{ matrix.compiler }}" == "mingw" ]]; then
+            # Force MinGW tools
+            export CC=x86_64-w64-mingw32-gcc
+            export CXX=x86_64-w64-mingw32-g++
+          fi
+
+          CMAKE_FLAGS=""
+          if [ "$ARCH" = "x86" ]; then
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              CMAKE_FLAGS="-A Win32"
+            else 
+              CMAKE_FLAGS="-D CMAKE_C_FLAGS=-m32 -D CMAKE_CXX_FLAGS=-m32"
+            fi
+          fi
+
+          VCPKG_ROOT_POSIX=$(wslpath "${VCPKG_ROOT}" 2>/dev/null || echo "${VCPKG_ROOT}")
+          cmake -D CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT_POSIX/scripts/buildsystems/vcpkg.cmake \
+            -D VCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -S . -B build_test $CMAKE_FLAGS
+
+          BUILD_CONFIG_CMAKE=""
+          BUILD_CONFIG_CTEST=""
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            BUILD_CONFIG_CMAKE="--config Debug"
+            BUILD_CONFIG_CTEST="-C Debug"
+          fi
+
+          cmake --build build_test --target IntegrationTests $BUILD_CONFIG_CMAKE
+          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
