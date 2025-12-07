@@ -1,7 +1,7 @@
 name: C++ Integration Tests
 on: push
 jobs:
-  build-and-test:
+  cpp-integration-tests:
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +22,15 @@ jobs:
             compiler: msvc
             arch: x86
             triplet: x86-windows-dynamic
+          - os: ubuntu-24.04-arm
+            compiler: gcc
+            triplet: arm64-linux-dynamic
+          - os: ubuntu-24.04-arm
+            compiler: clang
+            triplet: arm64-linux-dynamic
+          - os: windows-11-arm
+            compiler: msvc
+            triplet: arm64-windows-dynamic
           # - os: windows-latest
           #   compiler: mingw
           #   triplet: x64-mingw-dynamic  # EVENTUALLY: get MinGW working
