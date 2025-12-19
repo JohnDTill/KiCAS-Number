@@ -1,6 +1,8 @@
 #ifndef KI_CAS_INTEGER_MATH_H
 #define KI_CAS_INTEGER_MATH_H
 
+#include <stddef.h>
+
 namespace KiCAS2 {
 
 /// Returns true if the calculation overflows
