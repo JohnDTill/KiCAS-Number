@@ -167,7 +167,7 @@ TEST_CASE( "ckd_nrt (Exhaustive)" ) {
 
     for(size_t exp = 4; exp <= max_exponent; exp++){
         constexpr double fudge_factor = 1e-6;  // EVENTUALLY: this keeps solving as 2^64, which is out of range
-        const size_t max_base = std::powl(std::numeric_limits<size_t>::max(), 1.0/exp) - fudge_factor;
+        const size_t max_base = std::pow(std::numeric_limits<size_t>::max(), 1.0/exp) - fudge_factor;
 
         for(size_t base = 0; base <= max_base; base++){
             const size_t arg = knownfit_pow(base, exp);
@@ -206,7 +206,7 @@ TEST_CASE( "ckd_pow (More thorough)" ) {
 
     for(size_t exp = 2; exp <= max_exp; exp++){
         constexpr double fudge_factor = 1e-6;  // EVENTUALLY: this keeps solving as 2^64, which is out of range
-        const size_t max_base = std::powl(std::numeric_limits<size_t>::max(), 1.0/exp) - fudge_factor;
+        const size_t max_base = std::pow(std::numeric_limits<size_t>::max(), 1.0/exp) - fudge_factor;
 
         const bool overflow = ckd_pow(&result, max_base, exp);
         const bool incorrect = !overflow && knownfit_pow(max_base, exp) != result;

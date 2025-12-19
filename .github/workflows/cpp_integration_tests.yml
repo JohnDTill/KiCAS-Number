@@ -105,8 +105,8 @@ jobs:
           BUILD_CONFIG_CMAKE=""
           BUILD_CONFIG_CTEST=""
           if [ "$RUNNER_OS" = "Windows" ]; then
-            BUILD_CONFIG_CMAKE="--config Debug"
-            BUILD_CONFIG_CTEST="-C Debug"
+            BUILD_CONFIG_CMAKE="--config RelWithDebInfo"
+            BUILD_CONFIG_CTEST="-C RelWithDebInfo"
           fi
 
           cmake --build build_test --target IntegrationTests $BUILD_CONFIG_CMAKE
