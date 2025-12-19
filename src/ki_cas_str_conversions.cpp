@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <charconv>
+#include <limits>
 
 namespace KiCAS2 {
 
