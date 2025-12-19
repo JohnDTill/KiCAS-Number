@@ -34,7 +34,7 @@ install(TARGETS ki_cas_number
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # Testing setup
-find_package(catch2 CONFIG REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
 
 enable_testing()
 add_executable(IntegrationTests ${SRC_FILES}
