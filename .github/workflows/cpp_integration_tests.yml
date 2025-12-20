@@ -49,8 +49,10 @@ jobs:
           #   arch: x86
           #   # triplet: x86-mingw-dynamic  # EVENTUALLY: get dynamic Windows x86 working
           #   triplet: x86-mingw-static
-
     runs-on: ${{ matrix.os }}
+    env:
+      VCPKG_BINARY_SOURCES: ${{ github.workspace }}/vcpkg_binary_cache
+      X_VCPKG_ASSET_SOURCES: ${{ github.workspace }}/vcpkg_asset_cache
     steps:
       - uses: actions/checkout@v6
 
@@ -79,6 +81,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: '${GITHUB_WORKSPACE}/vcpkg.json'
+          # doNotCache: false  # TODO: enable this
         env:
           VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
           VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.triplet }}
@@ -87,11 +90,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/vcpkg
+            ${VCPKG_BINARY_SOURCES}
+            ${X_VCPKG_ASSET_SOURCES}/packages
             ${VCPKG_ROOT}/vcpkg_installed
-            ${VCPKG_ROOT}/buildtrees
-            ${VCPKG_ROOT}/packages
-          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-${{ matrix.compiler }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
 
       - name: Configure, Build, and Test
         shell: bash
