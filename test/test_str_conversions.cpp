@@ -59,4 +59,7 @@ TEST_CASE( "fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE" ) {
     fmpz_fac_ui(factorial_of_30, 30);
     fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(big_int, std::string("265252859812191058636308480000000"));
     REQUIRE(fmpz_cmp(big_int, factorial_of_30) == 0);
+
+    fmpz_clear(big_int);
+    fmpz_clear(factorial_of_30);
 }
