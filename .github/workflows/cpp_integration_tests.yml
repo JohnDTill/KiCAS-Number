@@ -67,7 +67,7 @@ jobs:
             export CXX=x86_64-w64-mingw32-g++
           fi
 
-          mkdir -m 664 ${GITHUB_WORKSPACE}/vcpkg_asset_cache
+          sudo mkdir -m 664 ${GITHUB_WORKSPACE}/vcpkg_asset_cache
           export VCPKG_BINARY_SOURCES=${GITHUB_WORKSPACE}/vcpkg_binary_cache
           export X_VCPKG_ASSET_SOURCES=x-azurl,file://${GITHUB_WORKSPACE}/vcpkg_asset_cache
 
