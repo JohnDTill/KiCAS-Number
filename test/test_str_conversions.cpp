@@ -63,3 +63,18 @@ TEST_CASE( "fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE" ) {
     fmpz_clear(big_int);
     fmpz_clear(factorial_of_30);
 }
+
+TEST_CASE( "write_rational" ) {
+    std::string str = "x + ";
+    NativeRational num(3,2);
+
+    SECTION("plaintext"){
+        write_rational<PLAINTEXT_OUTPUT>(str, num);
+        REQUIRE(str == "x + 3/2");
+    }
+
+    SECTION("typeset"){
+        write_rational<TYPESET_OUTPUT>(str, num);
+        REQUIRE(str == "x + ⁜f⏴3⏵⏴2⏵");
+    }
+}

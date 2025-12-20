@@ -45,6 +45,16 @@ void fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(fmpz_t f, std::string_v
     *end_const_discarded = backup;
 }
 
-
-
+template<bool typeset_fraction>
+void write_rational(std::string& str, NativeRational val) {
+    if(typeset_fraction) str += "⁜f⏴";
+    write_int(str, val.num);
+    if(typeset_fraction) str += "⏵⏴";
+    else str += '/';
+    write_int(str, val.den);
+    if(typeset_fraction) str += "⏵";
 }
+template void write_rational<false>(std::string&, NativeRational);
+template void write_rational<true>(std::string&, NativeRational);
+
+}  // namespace KiCAS2
