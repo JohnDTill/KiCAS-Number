@@ -52,7 +52,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       VCPKG_BINARY_SOURCES: ${{ github.workspace }}/vcpkg_binary_cache
-      X_VCPKG_ASSET_SOURCES: ${{ github.workspace }}/vcpkg_asset_cache
+      X_VCPKG_ASSET_SOURCES: x-azurl,file://${{ github.workspace }}/vcpkg_asset_cache
     steps:
       - uses: actions/checkout@v6
 
@@ -69,6 +69,8 @@ jobs:
             export CC=x86_64-w64-mingw32-gcc
             export CXX=x86_64-w64-mingw32-g++
           fi
+
+          mkdir -m 664 ${{ github.workspace }}/vcpkg_asset_cache
 
       - name: Apt dependencies
         shell: bash
@@ -91,8 +93,7 @@ jobs:
         with:
           path: |
             ${VCPKG_BINARY_SOURCES}
-            ${X_VCPKG_ASSET_SOURCES}/packages
-            ${VCPKG_ROOT}/vcpkg_installed
+            ${X_VCPKG_ASSET_SOURCES}
           key: vcpkg-${{ matrix.compiler }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
 
       - name: Configure, Build, and Test
