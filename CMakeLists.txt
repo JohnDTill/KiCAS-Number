@@ -10,10 +10,12 @@ include_directories("${FLINT_ROOT}/include")
 link_directories("${FLINT_ROOT}/lib")
 
 set(SRC_FILES
-    src/ki_cas_integer_math.h
     src/ki_cas_integer_math.cpp
+    src/ki_cas_integer_math.h
     src/ki_cas_number.cpp
     src/ki_cas_number.h
+    src/ki_cas_str_conversions.cpp
+    src/ki_cas_str_conversions.h
 )
 
 add_library(ki_cas_number SHARED ${SRC_FILES})
@@ -25,22 +27,21 @@ foreach(X Flint::flint gmp mpfr)
         message(FATAL_ERROR "Must dynamically link ${X} for LGPL compliance with Forscape's license")
     endif()
 endforeach()
+target_link_libraries(ki_cas_number flint)
 
 set_target_properties(ki_cas_number PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(ki_cas_number PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 set_target_properties(ki_cas_number PROPERTIES PUBLIC_HEADER src/ki_cas_number.h)
 
-install(TARGETS ki_cas_number
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+set_target_properties(ki_cas_number PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Testing setup
 find_package(Catch2 CONFIG REQUIRED)
 
 enable_testing()
-add_executable(IntegrationTests ${SRC_FILES}
-    test/test_integer_math.cpp)
+add_executable(IntegrationTests
+    test/test_integer_math.cpp
+    test/test_str_conversions.cpp)
 target_include_directories(IntegrationTests PUBLIC src)
-get_target_property(LIBS ki_cas_number LINK_LIBRARIES)
-target_link_libraries(IntegrationTests PRIVATE ${LINK_LIBRARIES})
-target_link_libraries(IntegrationTests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(IntegrationTests PRIVATE ki_cas_number Catch2::Catch2WithMain)
 add_test(NAME IntegrationTests COMMAND IntegrationTests)

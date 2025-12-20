@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <limits>
 
 #if __cplusplus >= 202302L
 #include <stdckdint.h>
