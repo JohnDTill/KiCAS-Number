@@ -83,7 +83,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: '${GITHUB_WORKSPACE}/vcpkg.json'
-          doNotCache: false
         env:
           VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
           VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.triplet }}
@@ -119,14 +118,18 @@ jobs:
         shell: bash
         run: |
           BUILD_CONFIG_CMAKE=""
-          BUILD_CONFIG_CTEST=""
           if [ "$RUNNER_OS" = "Windows" ]; then
             BUILD_CONFIG_CMAKE="--config RelWithDebInfo"
-            BUILD_CONFIG_CTEST="-C RelWithDebInfo"
           fi
 
           cmake --build build_test --target IntegrationTests $BUILD_CONFIG_CMAKE
 
       - name: Test
         shell: bash
-        run: ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
+        run: |
+          BUILD_CONFIG_CTEST=""
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            BUILD_CONFIG_CTEST="-C RelWithDebInfo"
+          fi
+
+          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
