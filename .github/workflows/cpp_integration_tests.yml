@@ -124,10 +124,3 @@ jobs:
 
           cmake --build build_test --target IntegrationTests $BUILD_CONFIG_CMAKE
           ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
-
-      - name: Debug vcpkg binary cache
-        # TODO: delete
-        run: |
-          echo "VCPKG_BINARY_SOURCES=$VCPKG_BINARY_SOURCES"
-          ls -la vvcpkg_binary_cachecpkg || true
-          ls -la vcpkg_binary_cache/binaries || true
