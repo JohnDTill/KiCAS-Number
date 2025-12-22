@@ -85,7 +85,7 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::
         1000000,
         10000000,
         100000000,
-        #if __WORDSIZE >= 64
+        #if defined(__x86_64) || defined( _WIN64 )  // 64-bit
         1000000000,
         10000000000,
         100000000000,

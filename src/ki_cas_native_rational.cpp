@@ -4,6 +4,11 @@
 #include <cassert>
 #include <numeric>
 
+#if !defined(__x86_64) && !defined( _WIN64 )  // 32-bit
+static_assert(sizeof(size_t)*8 == 32);
+#include <cstdint>
+#endif
+
 namespace KiCAS2 {
 
 KiCAS2::NativeRational::NativeRational(size_t numerator, size_t denominator) noexcept
@@ -88,8 +93,9 @@ bool operator<=(size_t a, NativeRational b) noexcept {
 }
 
 bool operator==(NativeRational a, NativeRational b) noexcept {
-    // Greedy approach with only multiplication
     // a/b == c/d  ⇒  a*d == c*b
+
+    // Greedy approach with native types
     size_t a_num_times_b_den;
     size_t b_num_times_a_den;
     const bool a_num_times_b_den_overflow = ckd_mul(&a_num_times_b_den, a.num, b.den);
@@ -98,16 +104,22 @@ bool operator==(NativeRational a, NativeRational b) noexcept {
         return (a_num_times_b_den == b_num_times_a_den)
                && (a_num_times_b_den_overflow == b_num_times_a_den_overflow);
 
-    // Greedy approach with floating point comparison
-    const double difference = static_cast<double>(a.num) * static_cast<double>(b.den)
-                              - static_cast<double>(b.num) * static_cast<double>(a.den);
-    constexpr double tol = 1e-12;
-    if(difference > tol || difference < -tol) return false;
+    #if defined(__x86_64) || defined( _WIN64 )  // 64-bit
+    size_t a_num_times_b_den_high;
+    const size_t a_num_times_b_den_low = _umul128(a.num, b.den, &a_num_times_b_den_high);
+    size_t b_num_times_a_den_high;
+    const size_t b_num_times_a_den_low = _umul128(b.num, a.den, &b_num_times_a_den_high);
 
-    // Robust approach
-    // TODO: I don't think you can generally answer this without gcd
-
-    return false;
+    return a_num_times_b_den_high == b_num_times_a_den_high
+           && a_num_times_b_den_low == b_num_times_a_den_low;
+    #elif defined(__x86_64)  // 64-bit  // TODO: is this needed, or does the above work
+    return static_cast<__uint128_t>(a.num) * static_cast<__uint128_t>(b.den)
+           == static_cast<__uint128_t>(b.num) * static_cast<__uint128_t>(a.den);
+    #else  // 32-bit
+    static_assert(sizeof(size_t)*8 == 32);
+    return static_cast<uint64_t>(a.num) * static_cast<uint64_t>(b.den)
+           == static_cast<uint64_t>(b.num) * static_cast<uint64_t>(a.den);
+    #endif
 }
 
 bool operator!=(NativeRational a, NativeRational b) noexcept {

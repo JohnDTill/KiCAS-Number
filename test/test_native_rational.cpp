@@ -71,10 +71,13 @@ TEST_CASE( "NativeRational vs. NativeRational comparisons" ) {
     REQUIRE(NativeRational(7,3) <= NativeRational(14,6));
 
     // TODO: test args causing overflow
-    // REQUIRE(!(NativeRational(2, MAX-2) == NativeRational(2, MAX)));
-    // REQUIRE(NativeRational(2, MAX-2) != NativeRational(2, MAX));
+    REQUIRE(!(NativeRational(2, MAX-2) == NativeRational(2, MAX)));
+    REQUIRE(NativeRational(2, MAX-2) != NativeRational(2, MAX));
     // REQUIRE(NativeRational(2, MAX-2) >= NativeRational(2, MAX));
     // REQUIRE(NativeRational(2, MAX-2) > NativeRational(2, MAX));
+
+    REQUIRE(NativeRational(6, MAX-1) == NativeRational(3, (MAX-1)/2));
+    REQUIRE(!(NativeRational(6, MAX-1) != NativeRational(3, (MAX-1)/2)));
 }
 
 TEST_CASE( "NativeRational::reduceInPlace" ) {
