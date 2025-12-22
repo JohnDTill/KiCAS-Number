@@ -104,7 +104,7 @@ bool operator==(NativeRational a, NativeRational b) noexcept {
         return (a_num_times_b_den == b_num_times_a_den)
                && (a_num_times_b_den_overflow == b_num_times_a_den_overflow);
 
-    #if defined(__x86_64) || defined( _WIN64 )  // 64-bit
+    #if defined( _WIN64 )  // 64-bit MSVC
     size_t a_num_times_b_den_high;
     const size_t a_num_times_b_den_low = _umul128(a.num, b.den, &a_num_times_b_den_high);
     size_t b_num_times_a_den_high;
@@ -112,7 +112,7 @@ bool operator==(NativeRational a, NativeRational b) noexcept {
 
     return a_num_times_b_den_high == b_num_times_a_den_high
            && a_num_times_b_den_low == b_num_times_a_den_low;
-    #elif defined(__x86_64)  // 64-bit  // TODO: is this needed, or does the above work
+    #elif defined(__x86_64)  // 64-bit GCC or Clang
     return static_cast<__uint128_t>(a.num) * static_cast<__uint128_t>(b.den)
            == static_cast<__uint128_t>(b.num) * static_cast<__uint128_t>(a.den);
     #else  // 32-bit
