@@ -133,7 +133,7 @@ TEST_CASE( "ckd_strdecimal2rat" ) {
 
         REQUIRE_FALSE(ckd_strdecimal2rat(&result, test_str));
         REQUIRE(result.num == test_num);
-        REQUIRE(result.den == expected_den);  // TODO: why is this 0 on some targets?
+        REQUIRE(result.den == expected_den);
     }
 
     SECTION("Overflow"){
@@ -148,7 +148,7 @@ TEST_CASE( "ckd_strdecimal2rat" ) {
 
         // // Test a combination of leading and trailing values which does not fit
         test_str = "999." + std::string(std::numeric_limits<size_t>::digits10-1, '9');
-        REQUIRE(true == ckd_strdecimal2rat(&result, test_str));  // TODO: why does this fail on some targets?
+        REQUIRE(true == ckd_strdecimal2rat(&result, test_str));
 
         test_str = "0." + std::string(std::numeric_limits<size_t>::digits10-1, '9');
         REQUIRE(false == ckd_strdecimal2rat(&result, test_str));
