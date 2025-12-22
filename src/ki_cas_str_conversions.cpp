@@ -5,8 +5,6 @@
 #include "ki_cas_integer_math.h"
 #include <limits>
 
-#include <iostream>  // TODO: delete
-
 namespace KiCAS2 {
 
 void write_int(std::string& str, size_t val) {
@@ -137,14 +135,10 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::
     //
     // Since the factors of the denominator are known, reducing here is cheap
 
-    std::cout << den << std::endl;
-
     // Remove a factor of 2
     const bool is_even = (trail % 2 == 0);
     den >>= is_even;
     trail >>= is_even;
-
-    std::cout << den << std::endl;
 
     // Remove all factors of 5
     // The first factor has a cheap test given the string representation
@@ -153,15 +147,11 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::
         trail /= 5;
         den /= 5;
 
-        std::cout << den << std::endl;
-
         size_t trail_div_5 = trail / 5;
         size_t trail_mod_5 = trail % 5;
         while(trail_mod_5 == 0){
             trail = trail_div_5;
             den /= 5;
-
-            std::cout << den << std::endl;
 
             trail_div_5 = trail / 5;
             trail_mod_5 = trail % 5;
