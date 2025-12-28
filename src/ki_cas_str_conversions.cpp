@@ -195,7 +195,7 @@ inline bool ckd_10_exponent(size_t& result, std::string_view str) noexcept {
         return false;
     }else{
         const size_t exp = str[0] * 10 + str[1];
-        if(result >= std::numeric_limits<size_t>::digits10) return true;
+        if(exp >= std::numeric_limits<size_t>::digits10) return true;
         result = powers_of_ten[exp];
         return false;
     }
