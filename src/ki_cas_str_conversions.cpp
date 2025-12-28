@@ -28,7 +28,7 @@ bool ckd_str2int(size_t* result, std::string_view str) noexcept {
     return parse_result.ec == std::errc::result_out_of_range;
 }
 
-void fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(fmpz_t f, std::string_view str) {
+void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(mpz_t f, std::string_view str) {
     // Get the end of the std::string_view, violating the purported immutability of std::string_view!
     // The byte past "str" must be valid owned memory! (std::string is specified to be null-terminated since C++11)
     // This also means the string cannot be read from another thread during this operation.
@@ -39,6 +39,26 @@ void fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(fmpz_t f, std::string_v
     *end_const_discarded = '\0';
 
     // Parse the null-terminated str
+    mpz_init(f);
+    const auto code = mpz_set_str(f, str.data(), 10);
+    assert(code == 0);
+
+    // Restore the original str
+    *end_const_discarded = backup;
+}
+
+void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpz_t f, std::string_view str) {
+    // Get the end of the std::string_view, violating the purported immutability of std::string_view!
+    // The byte past "str" must be valid owned memory! (std::string is specified to be null-terminated since C++11)
+    // This also means the string cannot be read from another thread during this operation.
+    char* end_const_discarded = const_cast<char*>(str.data()+str.size());
+
+    // Backup the character at the end, and replace with '\0' so that GMP knows to stop parsing the int.
+    const char backup = *end_const_discarded;
+    *end_const_discarded = '\0';
+
+    // Parse the null-terminated str
+    fmpz_init(f);
     const auto code = fmpz_set_str(f, str.data(), 10);
     assert(code == 0);
 
@@ -84,6 +104,33 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str, size_t dec
     }
 }
 
+constexpr size_t powers_of_ten[] = {
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+#if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
+    1000000000,
+    10000000000,
+    100000000000,
+    1000000000000,
+    10000000000000,
+    100000000000000,
+    1000000000000000,
+    10000000000000000,
+    100000000000000000,
+    1000000000000000000,
+#endif
+};
+
+// Check this rather than specify it to make sure the macro worked
+static_assert(sizeof(powers_of_ten)/sizeof(size_t) == std::numeric_limits<size_t>::digits10);
+
 bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::string_view str_trail) noexcept {
     // Precondition: strings are from the same number source, separated by a decimal point
     assert(str_trail.data() == str_lead.data() + str_lead.size() + 1);
@@ -100,34 +147,7 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::
     if(ckd_str2int(&lead, str_lead) || ckd_str2int(&trail, str_trail)) return true;
 
     // a.b = a + b/10^len(b)
-
-    constexpr size_t powers_of_ten[] = {
-        1,
-        10,
-        100,
-        1000,
-        10000,
-        100000,
-        1000000,
-        10000000,
-        100000000,
-        #if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
-        1000000000,
-        10000000000,
-        100000000000,
-        1000000000000,
-        10000000000000,
-        100000000000000,
-        1000000000000000,
-        10000000000000000,
-        100000000000000000,
-        1000000000000000000,
-        #endif
-    };
     size_t den = powers_of_ten[str_trail.size()];
-
-    // Check this rather than specify it to make sure the macro worked
-    static_assert(sizeof(powers_of_ten)/sizeof(size_t) == std::numeric_limits<size_t>::digits10);
 
     // The factors of the denominator are:
     //   Up to one instance of 2
@@ -164,6 +184,122 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::
 
     size_t lead_times_den;
     return ckd_mul(&lead_times_den, lead, den) || ckd_add(&result->num, lead_times_den, trail);
+}
+
+inline bool ckd_10_exponent(size_t& result, std::string_view str) noexcept {
+#if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
+    if(str.length() > 2){
+        return true;
+    }else if(str.length() == 1){
+        result = powers_of_ten[str[0] - '0'];
+        return false;
+    }else{
+        const size_t exp = str[0] * 10 + str[1];
+        if(result >= std::numeric_limits<size_t>::digits10) return true;
+        result = powers_of_ten[exp];
+        return false;
+    }
+#else  // 32-bit
+    if(str.size() != 1) return true;
+    const size_t exp = str[0] - '0';
+    if(exp >= std::numeric_limits<size_t>::digits10) return true;
+    result = powers_of_ten[exp];
+    return false;
+#endif
+}
+
+bool ckd_strscientific2rat(NativeRational* result, std::string_view str) noexcept {
+    const auto decimal_index = str.find('.');
+    assert(decimal_index != std::string::npos);
+
+    const auto exponent_index = str.find('e', decimal_index);
+    assert(exponent_index != std::string::npos);
+
+    return ckd_strscientific2rat(result, str, decimal_index, exponent_index);
+}
+
+bool ckd_strscientific2rat(NativeRational* result, std::string_view str, size_t decimal_index, size_t e_index) noexcept {
+    assert(str.at(decimal_index) == '.');
+    assert(str.at(e_index) == 'e');
+    assert(str.length() > e_index+1);
+
+    std::string_view lead = str.substr(0, decimal_index);
+
+    // Omit trailing zeros
+    size_t back_index = e_index-1;
+    while(str[back_index] == '0') back_index--;
+
+    NativeRational intermediate;
+    if(back_index == decimal_index){
+        // Only trailing zeros, e.g. "2.0"
+        intermediate.den = 1;
+        if(ckd_str2int(&intermediate.num, lead)) return true;
+    }else{
+        std::string_view trail = str.substr(decimal_index+1, back_index-decimal_index);
+        if(ckd_strdecimal2rat(&intermediate, lead, trail)) return true;
+    }
+
+    if(str[e_index+1] == '-'){
+        size_t power;
+        return ckd_10_exponent(power, str.substr(e_index+2)) || ckd_div(result, intermediate, power);
+    }else{
+        size_t power;
+        return ckd_10_exponent(power, str.substr(e_index+1)) || ckd_mul(result, intermediate, power);
+    }
+}
+
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str) {
+    const auto decimal_index = str.find('.');
+    assert(decimal_index != std::string::npos);
+
+    return strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, str, decimal_index);
+}
+
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t decimal_index) {
+    assert(str.at(decimal_index) == '.');
+
+    std::string_view lead = str.substr(0, decimal_index);
+
+    // Omit trailing zeros
+    size_t back_index = str.size()-1;
+    while(str[back_index] == '0') back_index--;
+
+    if(back_index == decimal_index){
+        // Only trailing zeros, e.g. "2.0"
+        fmpz_set_ui(fmpq_denref(f), 1);
+        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(f), lead);
+    }else{
+        std::string_view trail = str.substr(decimal_index+1, back_index-decimal_index);
+        return strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, lead, trail);
+    }
+}
+
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str_lead, std::string_view str_trail) {
+    fmpz_t lead;
+    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(lead, str_lead);
+    fmpq_t tail;
+    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(tail), str_trail);
+
+    if(str_trail.length() >= std::numeric_limits<size_t>::digits10){
+        mpz_t den;
+        flint_mpz_ui_pow_ui(den, 10, str_trail.size());
+        *fmpq_denref(tail) = PTR_TO_COEFF(den);
+    }else{
+        fmpz_set_ui(fmpq_denref(tail), powers_of_ten[str_trail.size()]);
+    }
+    fmpq_canonicalise(tail);
+
+    fmpq_add_fmpz(f, tail, lead);
+    fmpq_clear(tail);
+    fmpz_clear(lead);
+}
+
+void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t decimal_index) {
+    // TODO
+}
+
+void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str_lead, std::string_view str_trail) {
+    // TODO
 }
 
 static size_t numBase10DigitsLowerBound(const mpz_t val) noexcept {

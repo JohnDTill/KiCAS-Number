@@ -9,10 +9,14 @@
 #include <gmp.h>
 #include <flint/fmpq.h>
 #include <flint/fmpz.h>
+#include <string>
 
 namespace KiCAS2 {
 
 class Number {
+public:
+    void writeString(std::string& str) const;
+
 private:
     struct Data {
     public:
@@ -46,6 +50,7 @@ private:
             mpz_t big_int;
             fmpq_t big_rational;
             Complex complex;
+            long double floating_point;
         } data;
 
         enum {
@@ -56,6 +61,7 @@ private:
             BigInt,
             BigRat,
             Complex,
+            Float,
         } tag;
 
         #ifndef NDEBUG

@@ -18,10 +18,15 @@ void write_int(std::string& str, size_t val);
 /// Set an integer from a string. Returns true if the value is too large to fit.
 bool ckd_str2int(size_t* result, std::string_view str) noexcept;
 
-/// Set a Flint integer from a string.
+/// Set a big integer from a string.
 /// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
 ///          precondition is verifiable here.
-void fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(fmpz_t f, std::string_view str);
+void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(mpz_t f, std::string_view str);
+
+/// Set a big integer from a string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpz_t f, std::string_view str);
 
 inline constexpr bool PLAINTEXT_OUTPUT = false;
 inline constexpr bool TYPESET_OUTPUT = true;
@@ -37,6 +42,37 @@ bool ckd_strdecimal2rat(NativeRational* result, std::string_view str, size_t dec
 
 /// Set an NativeRational from a string. Returns true if the value is too large to fit.
 bool ckd_strdecimal2rat(NativeRational* result, std::string_view str_lead, std::string_view str_trail) noexcept;
+
+/// Set an NativeRational from a string. Returns true if the value is too large to fit.
+bool ckd_strscientific2rat(NativeRational* result, std::string_view str) noexcept;
+
+/// Set an NativeRational from a string. Returns true if the value is too large to fit.
+bool ckd_strscientific2rat(NativeRational* result, std::string_view str, size_t decimal_index, size_t e_index) noexcept;
+
+/// Set a big rational from a decimal number string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str);
+
+/// Set a big rational from a decimal number string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t decimal_index);
+
+/// Set a big rational from a decimal number string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str_lead, std::string_view str_trail);
+
+/// Set a big rational from a scientific number string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t decimal_index);
+
+/// Set a big rational from a scientific number string.
+/// @warning The underlying string must be null-terminated and not accessed in another thread. Neither
+///          precondition is verifiable here.
+void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str_lead, std::string_view str_trail);
 
 /// Append a big integer to the end of the string
 void write_big_int(std::string& str, const BigInteger val);

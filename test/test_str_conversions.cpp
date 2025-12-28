@@ -48,22 +48,34 @@ TEST_CASE( "ckd_str2int" ) {
 }
 
 TEST_CASE( "fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE" ) {
-    fmpz_t big_int;
-    fmpz_init(big_int);
-    fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(big_int, std::string("0"));
-    REQUIRE(fmpz_get_si(big_int) == 0);
+    BigInteger big_int;
+    std::string input;
 
-    fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(big_int, std::string("42"));
-    REQUIRE(fmpz_get_si(big_int) == 42);
+    input = "0";
+    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(big_int, input);
+    REQUIRE(mpz_get_si(big_int) == 0);
+    REQUIRE(input == "0");
+    mpz_clear(big_int);
+    DEBUG_REQUIRE(isAllGmpMemoryFreed());
 
-    fmpz_t factorial_of_30;
-    fmpz_init(factorial_of_30);
-    fmpz_fac_ui(factorial_of_30, 30);
-    fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE(big_int, std::string("265252859812191058636308480000000"));
-    REQUIRE(fmpz_cmp(big_int, factorial_of_30) == 0);
+    input = "42";
+    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(big_int, input);
+    REQUIRE(mpz_get_si(big_int) == 42);
+    REQUIRE(input == "42");
+    mpz_clear(big_int);
+    DEBUG_REQUIRE(isAllGmpMemoryFreed());
 
-    fmpz_clear(big_int);
-    fmpz_clear(factorial_of_30);
+    input = "265252859812191058636308480000000";
+    mpz_t factorial_of_30;
+    mpz_init(factorial_of_30);
+    mpz_fac_ui(factorial_of_30, 30);
+    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(big_int, input);
+    REQUIRE(mpz_cmp(big_int, factorial_of_30) == 0);
+    REQUIRE(input == "265252859812191058636308480000000");
+
+    mpz_clear(big_int);
+    mpz_clear(factorial_of_30);
+    DEBUG_REQUIRE(isAllGmpMemoryFreed());
 }
 
 TEST_CASE( "write_rational" ) {
@@ -156,6 +168,52 @@ TEST_CASE( "ckd_strdecimal2rat" ) {
         // Test a leading value which does not fit
         REQUIRE(true == ckd_strdecimal2rat(&result, "265252859812191058636308480000000.1"));
     }
+}
+
+TEST_CASE( "ckd_strscientific2rat" ) {
+    NativeRational result;
+
+    REQUIRE_FALSE(ckd_strscientific2rat(&result, "1.0e-2"));
+    REQUIRE(result.num == 1);
+    REQUIRE(result.den == 100);
+
+    REQUIRE_FALSE(ckd_strscientific2rat(&result, "0.1e-2"));
+    REQUIRE(result.num == 1);
+    REQUIRE(result.den == 1000);
+
+    REQUIRE_FALSE(ckd_strscientific2rat(&result, "1.01e2"));
+    REQUIRE(result.num == 10100);
+    REQUIRE(result.den == 100);
+
+    REQUIRE(true == ckd_strscientific2rat(&result, "1.0e20"));
+
+    REQUIRE(true == ckd_strscientific2rat(&result, "1.0e-20"));
+}
+
+TEST_CASE( "strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE" ) {
+    BigRational big_rat;
+    std::string input;
+
+    input = "2.5";
+    strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
+    REQUIRE(fmpz_get_ui(fmpq_numref(big_rat)) == 5);
+    REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 2);
+    REQUIRE(input == "2.5");
+    fmpq_clear(big_rat);
+    DEBUG_REQUIRE(isAllGmpMemoryFreed());
+
+    input = "265252859812191058636308480000000.0";
+    fmpz_t factorial_of_30;
+    fmpz_init(factorial_of_30);
+    fmpz_fac_ui(factorial_of_30, 30);
+    strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
+    REQUIRE(fmpz_cmp(fmpq_numref(big_rat), factorial_of_30) == 0);
+    REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 1);
+    REQUIRE(input == "265252859812191058636308480000000.0");
+
+    fmpq_clear(big_rat);
+    fmpz_clear(factorial_of_30);
+    DEBUG_REQUIRE(isAllGmpMemoryFreed());
 }
 
 TEST_CASE( "write_big_int" ) {
