@@ -23,7 +23,7 @@ void write_int(std::string& str, size_t val) {
 
 void write_float(std::string& str, FloatingPoint val) {
     #if !defined(__GNUC__) || __GNUC__ > 8
-    constexpr size_t max_digits = 32;
+    constexpr size_t max_digits = 64;
     str.resize(str.size() + max_digits);
 
     // Append the number to the end of str
@@ -380,6 +380,7 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
         if(ckd_str2int(&exp, str.substr(e_index))) throw;
 
         fmpz_t exponent;
+        fmpz_init(exponent);
         fmpz_t ten;
         fmpz_set_ui(ten, 10);
         fmpz_pow_ui(exponent, ten, exp);
