@@ -281,9 +281,8 @@ void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::strin
     str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(tail), str_trail);
 
     if(str_trail.length() >= std::numeric_limits<size_t>::digits10){
-        mpz_t den;
-        flint_mpz_ui_pow_ui(den, 10, str_trail.size());
-        *fmpq_denref(tail) = PTR_TO_COEFF(den);
+        _fmpz_promote(fmpq_denref(f));
+        flint_mpz_ui_pow_ui(COEFF_TO_PTR(fmpq_denref(f)), 10, str_trail.size());
     }else{
         fmpz_set_ui(fmpq_denref(tail), powers_of_ten[str_trail.size()]);
     }

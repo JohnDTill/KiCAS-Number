@@ -194,26 +194,30 @@ TEST_CASE( "strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE" ) {
     BigRational big_rat;
     std::string input;
 
-    input = "2.5";
-    strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
-    REQUIRE(fmpz_get_ui(fmpq_numref(big_rat)) == 5);
-    REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 2);
-    REQUIRE(input == "2.5");
-    fmpq_clear(big_rat);
-    DEBUG_REQUIRE(isAllGmpMemoryFreed());
+    SECTION("Small decimal"){
+        input = "2.5";
+        strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
+        REQUIRE(fmpz_get_ui(fmpq_numref(big_rat)) == 5);
+        REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 2);
+        REQUIRE(input == "2.5");
+        fmpq_clear(big_rat);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed());
+    }
 
-    input = "265252859812191058636308480000000.0";
-    fmpz_t factorial_of_30;
-    fmpz_init(factorial_of_30);
-    fmpz_fac_ui(factorial_of_30, 30);
-    strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
-    REQUIRE(fmpz_cmp(fmpq_numref(big_rat), factorial_of_30) == 0);
-    REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 1);
-    REQUIRE(input == "265252859812191058636308480000000.0");
+    SECTION("Large integer with decimal zero"){
+        input = "265252859812191058636308480000000.0";
+        fmpz_t factorial_of_30;
+        fmpz_init(factorial_of_30);
+        fmpz_fac_ui(factorial_of_30, 30);
+        strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
+        REQUIRE(fmpz_cmp(fmpq_numref(big_rat), factorial_of_30) == 0);
+        REQUIRE(fmpz_get_ui(fmpq_denref(big_rat)) == 1);
+        REQUIRE(input == "265252859812191058636308480000000.0");
 
-    fmpq_clear(big_rat);
-    fmpz_clear(factorial_of_30);
-    DEBUG_REQUIRE(isAllGmpMemoryFreed());
+        fmpq_clear(big_rat);
+        fmpz_clear(factorial_of_30);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed());
+    }
 }
 
 TEST_CASE( "write_big_int" ) {
