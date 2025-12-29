@@ -68,7 +68,7 @@ Number Number::fromScientificString(std::string_view str) {
     const size_t decimal_index = str.find('.');
     assert(decimal_index != std::string::npos);
 
-    const size_t e_index =str.find('e', decimal_index);
+    const size_t e_index = str.find('e', decimal_index);
     assert(e_index != std::string::npos);
 
     return fromScientificString(str, decimal_index, e_index);

@@ -372,13 +372,11 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
     fmpz_t copy;
     fmpz_init_set(copy, target);
 
+    str = str.substr(e_index);
     size_t exp;
-    if(ckd_10_exponent(exp, str.substr(e_index)) == false){
+    if(ckd_10_exponent(exp, str) == false){
         fmpz_mul_ui(target, copy, exp);
-    }else{
-        // TODO: should this be checked with a return? How do you handle unreasonable big num operations?
-        if(ckd_str2int(&exp, str.substr(e_index))) throw;
-
+    }else if(ckd_str2int(&exp, str) == false){
         fmpz_t exponent;
         fmpz_init(exponent);
         fmpz_t ten;
@@ -386,6 +384,16 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
         fmpz_pow_ui(exponent, ten, exp);
         fmpz_mul(target, copy, exponent);
         fmpz_clear(exponent);
+    }else{
+        fmpz_t exponent;
+        fmpz_t exp;
+        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(exp, str);
+        fmpz_t ten;
+        fmpz_init_set_ui(ten, 10);
+        fmpz_pow_fmpz(exponent, ten, exp);
+        fmpz_mul(target, copy, exponent);
+        fmpz_clear(exponent);
+        fmpz_clear(exp);
     }
 
     fmpz_clear(copy);
