@@ -5,8 +5,6 @@
 #include "ki_cas_integer_math.h"
 #include <limits>
 
-#include <iostream>  // TODO: delete
-
 namespace KiCAS2 {
 
 void write_int(std::string& str, size_t val) {
@@ -322,7 +320,7 @@ void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::strin
 
     if(back_index == decimal_index){
         // Only trailing zeros, e.g. "2.0"
-        fmpz_set_ui(fmpq_denref(f), 1);
+        fmpz_init_set_ui(fmpq_denref(f), 1);
         str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(f), lead);
     }else{
         std::string_view trail = str.substr(decimal_index+1, back_index-decimal_index);
@@ -340,7 +338,7 @@ void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::strin
         _fmpz_promote(fmpq_denref(tail));
         flint_mpz_ui_pow_ui(COEFF_TO_PTR(fmpq_denref(tail)), 10, str_trail.size());
     }else{
-        fmpz_set_ui(fmpq_denref(tail), powers_of_ten[str_trail.size()]);
+        fmpz_init_set_ui(fmpq_denref(tail), powers_of_ten[str_trail.size()]);
     }
     fmpq_canonicalise(tail);
 
@@ -364,8 +362,6 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
     BigRational f, std::string_view str, size_t decimal_index, size_t e_index) {
     strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, str.substr(0, e_index));
 
-    std::cout << __LINE__ << std::endl;
-
     e_index++;
     auto target = fmpq_numref(f);
     if(str[e_index] == '-'){
@@ -373,41 +369,26 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
         target = fmpq_denref(f);
     }
 
-    std::cout << __LINE__ << std::endl;
-
     fmpz_t copy;
     fmpz_init_set(copy, target);
 
-    std::cout << __LINE__ << std::endl;
-
     size_t exp;
     if(ckd_10_exponent(exp, str.substr(e_index)) == false){
-        std::cout << __LINE__ << std::endl;
         fmpz_mul_ui(target, copy, exp);
-        std::cout << __LINE__ << std::endl;
     }else{
         // TODO: should this be checked with a return? How do you handle unreasonable big num operations?
-        std::cout << __LINE__ << std::endl;
         if(ckd_str2int(&exp, str.substr(e_index))) throw;
 
-        std::cout << __LINE__ << std::endl;
         fmpz_t exponent;
         fmpz_init(exponent);
-        std::cout << __LINE__ << std::endl;
         fmpz_t ten;
-        std::cout << __LINE__ << std::endl;
-        fmpz_set_ui(ten, 10);
-        std::cout << __LINE__ << std::endl;
+        fmpz_init_set_ui(ten, 10);
         fmpz_pow_ui(exponent, ten, exp);
-        std::cout << __LINE__ << std::endl;
         fmpz_mul(target, copy, exponent);
-        std::cout << __LINE__ << std::endl;
         fmpz_clear(exponent);
     }
 
-    std::cout << __LINE__ << std::endl;
     fmpz_clear(copy);
-    std::cout << __LINE__ << std::endl;
 }
 
 static size_t numBase10DigitsLowerBound(const mpz_t val) noexcept {
