@@ -5,6 +5,7 @@
 #include "ki_cas_big_num_wrapper.h"
 #include "ki_cas_float.h"
 #include "ki_cas_native_rational.h"
+#include <stdint.h>
 #include <string>
 
 namespace KiCAS2 {
