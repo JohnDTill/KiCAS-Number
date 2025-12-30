@@ -439,6 +439,7 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
         DEBUG_DISABLE_SPOOF
 
         fmpz_t exponent;
+        fmpz_init(exponent);
         fmpz_t exp;
         str2bigint_NULL_TERMINATED__NOT_THREADSAFE(exp, str);
         fmpz_t ten;
