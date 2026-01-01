@@ -75,6 +75,10 @@ void write_big_int(std::string& str, const BigInteger val);
 /// Append a big rational to the end of the string
 template<bool typeset_fraction> void write_big_rational(std::string& str, const BigRational val);
 
+#ifndef NDEBUG
+bool& spoofBignumPath();
+#endif
+
 }  // namespace KiCAS2
 
 #endif // KI_CAS_STR_CONVERSIONS_H

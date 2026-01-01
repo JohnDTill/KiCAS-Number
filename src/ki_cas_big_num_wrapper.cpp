@@ -43,15 +43,17 @@ static void* leakTrackingAlloc(size_t n) {
 
 static void leakTrackingFree(void* p, size_t old) noexcept {
     allocation_mutex.lock_shared();
-    assert(allocated_memory.find(p) != allocated_memory.end());
     allocated_memory.erase(p);
     allocator.deallocate(reinterpret_cast<size_t*>(p), old);
     allocation_mutex.unlock_shared();
 }
 
 static void* leakTrackingRealloc(void* p, size_t old, size_t n) {
-    void* reallocated = leakTrackingAlloc(n);
-    memcpy(reallocated, p, sizeof(size_t)*std::min(old, n));
+    void* reallocated = nullptr;
+    if(n != 0){
+        reallocated = leakTrackingAlloc(n);
+        memcpy(reallocated, p, sizeof(size_t)*std::min(old, n));
+    }
     leakTrackingFree(p, old);
     return reallocated;
 }

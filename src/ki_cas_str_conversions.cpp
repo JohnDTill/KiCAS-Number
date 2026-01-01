@@ -10,6 +10,11 @@ namespace KiCAS2 {
 
 #ifndef NDEBUG
 bool spoof_bignum_path = false;
+
+bool& spoofBignumPath() {
+    return spoof_bignum_path;
+}
+
 #define DEBUG_DISABLE_SPOOF spoof_bignum_path = false;
 #else
 static constexpr bool spoof_bignum_path = false;
@@ -263,7 +268,7 @@ void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string
 
     size_t exp10;
     if(ckd_10_exponent(exp10, exp_str) == false){
-        fmpz_set_ui(fmpq_denref(f), exp10);
+        fmpz_init_set_ui(fmpq_denref(f), exp10);
     }else if(ckd_str2int(&exp10, exp_str) == false && !spoof_bignum_path){
         fmpz_init_set_ui(fmpq_denref(f), 10);
         fmpz_pow_ui(fmpq_denref(f), fmpq_denref(f), exp10);

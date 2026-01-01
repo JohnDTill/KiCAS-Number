@@ -6,10 +6,6 @@ using namespace KiCAS2;
 
 static constexpr size_t MAX = std::numeric_limits<size_t>::max();
 
-#ifndef NDEBUG
-namespace KiCAS2 { extern bool spoof_bignum_path; }
-#endif
-
 TEST_CASE( "fmpz_set_str_NULL_TERMINATED_SOURCE__NOT_THREADSAFE" ) {
     BigInteger big_int;
     std::string input;
@@ -108,14 +104,14 @@ TEST_CASE( "strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE" ) {
 
     #ifndef NDEBUG
     SECTION("Large exponent big exponent path"){
-        spoof_bignum_path = true;
+        spoofBignumPath() = true;
         input = "0.3e-24";
         strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
         REQUIRE(std::string(fmpq_get_str(nullptr, 10, big_rat)) == "3/10000000000000000000000000");
         REQUIRE(input == "0.3e-24");
         fmpq_clear(big_rat);
         DEBUG_REQUIRE(isAllGmpMemoryFreed());
-        DEBUG_REQUIRE_FALSE(spoof_bignum_path);  // Confirm bignum path was taken
+        DEBUG_REQUIRE_FALSE(spoofBignumPath());  // Confirm bignum path was taken
     }
     #endif
 }
@@ -145,7 +141,7 @@ TEST_CASE( "strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE" ) {
 
     #ifndef NDEBUG
     SECTION("Big number big exponent path"){
-        spoof_bignum_path = true;
+        spoofBignumPath() = true;
         input = "1e25";
         strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(big_int, input);
         fmpz alias = PTR_TO_COEFF(big_int);
@@ -153,7 +149,7 @@ TEST_CASE( "strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE" ) {
         REQUIRE(input == "1e25");
         mpz_clear(big_int);
         DEBUG_REQUIRE(isAllGmpMemoryFreed());
-        DEBUG_REQUIRE_FALSE(spoof_bignum_path);  // Confirm bignum path was taken
+        DEBUG_REQUIRE_FALSE(spoofBignumPath());  // Confirm bignum path was taken
     }
     #endif
 }
@@ -184,14 +180,14 @@ TEST_CASE( "strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE" ) {
 
     #ifndef NDEBUG
     SECTION("Big number big exponent path"){
-        spoof_bignum_path = true;
+        spoofBignumPath() = true;
         input = "1e-25";
         strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(big_rat, input);
         REQUIRE(std::string(fmpq_get_str(nullptr, 10, big_rat)) == "1/10000000000000000000000000");
         REQUIRE(input == "1e-25");
         fmpq_clear(big_rat);
         DEBUG_REQUIRE(isAllGmpMemoryFreed());
-        DEBUG_REQUIRE_FALSE(spoof_bignum_path);  // Confirm bignum path was taken
+        DEBUG_REQUIRE_FALSE(spoofBignumPath());  // Confirm bignum path was taken
     }
     #endif
 }
