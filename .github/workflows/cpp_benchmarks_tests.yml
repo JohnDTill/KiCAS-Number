@@ -1,7 +1,7 @@
 name: C++ Benchmarks
 on: push
 jobs:
-  cpp-tests:
+  cpp-benchmarks:
     strategy:
       fail-fast: false
       matrix:

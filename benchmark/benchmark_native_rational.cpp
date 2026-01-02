@@ -19,20 +19,24 @@ TEST_CASE("ckd_strscientific2rat") {
     SECTION("Integer result"){
         const std::string str = "2.998e8";
         NativeRational result;
-        REQUIRE_FALSE(ckd_strdecimal2rat(&result, str));
+        REQUIRE_FALSE(ckd_strscientific2rat(&result, str));
+        REQUIRE(result.num == 299800000);
+        REQUIRE(result.den == 1);
 
         BENCHMARK_ADVANCED( "ckd_strscientific2rat (integer)" )(Catch::Benchmark::Chronometer meter) {
-            meter.measure([&](){ ckd_strdecimal2rat(&result, str); });
+            meter.measure([&](){ ckd_strscientific2rat(&result, str); });
         };
     }
 
     SECTION("Rational result"){
         const std::string str = "25.4e-3";
         NativeRational result;
-        REQUIRE_FALSE(ckd_strdecimal2rat(&result, str));
+        REQUIRE_FALSE(ckd_strscientific2rat(&result, str));
+        REQUIRE(result.num == 127);
+        REQUIRE(result.den == 5000);
 
         BENCHMARK_ADVANCED( "ckd_strscientific2rat (rational)" )(Catch::Benchmark::Chronometer meter) {
-            meter.measure([&](){ ckd_strdecimal2rat(&result, str); });
+            meter.measure([&](){ ckd_strscientific2rat(&result, str); });
         };
     }
 }
