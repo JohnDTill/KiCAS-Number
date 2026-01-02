@@ -11,8 +11,6 @@ static_assert(sizeof(size_t)*8 == 32);
 #include <cstdint>
 #endif
 
-#include <iostream>  // TODO: delete
-
 #if defined(_MSC_VER) && defined(_M_ARM64)  // 64-bit ARM MSVC
 // MSVC on arm64 does not have any way to multiply 128-bit numbers using intrinsics.
 // We would rather create this function than include boost_multiprecision.
@@ -432,7 +430,7 @@ constexpr size_t powers_of_ten[] = {
     1000000,
     10000000,
     100000000,
-    1000000000,
+    1000000000uLL,
 #if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
     10000000000,
     100000000000,
@@ -461,7 +459,7 @@ constexpr size_t powers_of_five[] = {
     78125,
     390625,
     1953125,
-    9765625,
+    9765625uLL,
 #if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
     48828125,
     244140625,
@@ -472,7 +470,7 @@ constexpr size_t powers_of_five[] = {
     762939453125,
     3814697265625,
     19073486328125,
-    95367431640625,
+    95367431640625uLL,
 #endif
 };
 static_assert(sizeof(powers_of_five)/sizeof(size_t) == std::numeric_limits<size_t>::digits10+2);

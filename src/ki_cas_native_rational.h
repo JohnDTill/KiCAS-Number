@@ -1,6 +1,7 @@
 #ifndef KI_CAS_NATIVE_RATIONAL_H
 #define KI_CAS_NATIVE_RATIONAL_H
 
+#include "ki_cas_typesetting_flags.h"
 #include <stddef.h>
 #include <string>
 
@@ -80,12 +81,6 @@ bool ckd_sub(NativeRational* result, size_t a, NativeRational b) noexcept;
 /// Requires a > b, asserts otherwise
 /// reduction is performed if required to fit, but the result is NOT canonicalised
 bool ckd_sub(NativeRational* result, NativeRational a, NativeRational b) noexcept;
-
-/// Flag indicating text output should be plaintext
-inline constexpr bool PLAINTEXT_OUTPUT = false;
-
-/// Flag indicating text output should be typeset
-inline constexpr bool TYPESET_OUTPUT = true;
 
 /// Append a rational to the end of the string
 template<bool typeset_fraction> void write_native_rational(std::string& str, NativeRational val);

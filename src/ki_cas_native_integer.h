@@ -1,6 +1,7 @@
 #ifndef KI_CAS_NATIVE_INTEGER_H
 #define KI_CAS_NATIVE_INTEGER_H
 
+#include <stdint.h>
 #include <stddef.h>
 #include <string>
 
@@ -42,6 +43,29 @@ bool ckd_str2int(size_t* result, std::string_view str) noexcept;
 /// Set an integer from a string of the form `['0' - '9']+`.
 /// Incudes debug assertion that the conversion does not overflow.
 size_t knownfit_str2int(std::string_view str) noexcept;
+
+#if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
+
+#if !defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)
+typedef uint64_t WideType;
+#else
+typedef __uint128_t WideType;
+#endif
+
+struct DoubleInt {
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    size_t low;
+    size_t high;
+    #else
+    size_t high;
+    size_t low;
+    #endif
+};
+
+/// Set an integer from a string of the form `['0' - '9']+`.
+/// Incudes debug assertion that the conversion does not overflow.
+DoubleInt knownfit_str2wideint(std::string_view str) noexcept;
+#endif
 
 }  // namespace KiCAS2
 

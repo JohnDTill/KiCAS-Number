@@ -10,7 +10,7 @@ include_directories("${FLINT_ROOT}/include")
 link_directories("${FLINT_ROOT}/lib")
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp mpfr)
 find_package(Threads REQUIRED)
 
 set(SRC_FILES
@@ -24,6 +24,7 @@ set(SRC_FILES
     src/ki_cas_native_rational.cpp
     src/ki_cas_str_conversions.cpp
     src/ki_cas_str_conversions.h
+    src/ki_cas_typesetting_flags.h
 )
 
 add_library(ki_cas_numeric_lib SHARED ${SRC_FILES})
@@ -56,3 +57,5 @@ add_executable(Tests
 target_include_directories(Tests PUBLIC src)
 target_link_libraries(Tests PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)
 add_test(NAME Tests COMMAND Tests)
+
+# TODO: add benchmarks

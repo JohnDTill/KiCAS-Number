@@ -21,47 +21,6 @@ static constexpr bool spoof_bignum_path = false;
 #define DEBUG_DISABLE_SPOOF
 #endif
 
-void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(mpz_t f, std::string_view str) {
-    assert(str.find('.') == std::string::npos);
-    assert(str.find('e') == std::string::npos);
-
-    // Get the end of the std::string_view, violating the purported immutability of std::string_view!
-    // The byte past "str" must be valid owned memory! (std::string is specified to be null-terminated since C++11)
-    // This also means the string cannot be read from another thread during this operation.
-    char* end_const_discarded = const_cast<char*>(str.data()+str.size());
-
-    // Backup the character at the end, and replace with '\0' so that GMP knows to stop parsing the int.
-    const char backup = *end_const_discarded;
-    *end_const_discarded = '\0';
-
-    // Parse the null-terminated str
-    mpz_init(f);
-    const auto code = mpz_set_str(f, str.data(), 10);
-    assert(code == 0);
-
-    // Restore the original str
-    *end_const_discarded = backup;
-}
-
-void str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpz_t f, std::string_view str) {
-    // Get the end of the std::string_view, violating the purported immutability of std::string_view!
-    // The byte past "str" must be valid owned memory! (std::string is specified to be null-terminated since C++11)
-    // This also means the string cannot be read from another thread during this operation.
-    char* end_const_discarded = const_cast<char*>(str.data()+str.size());
-
-    // Backup the character at the end, and replace with '\0' so that GMP knows to stop parsing the int.
-    const char backup = *end_const_discarded;
-    *end_const_discarded = '\0';
-
-    // Parse the null-terminated str
-    fmpz_init(f);
-    const auto code = fmpz_set_str(f, str.data(), 10);
-    assert(code == 0);
-
-    // Restore the original str
-    *end_const_discarded = backup;
-}
-
 constexpr size_t powers_of_ten[] = {
     1,
     10,
@@ -111,14 +70,14 @@ inline bool ckd_10_exponent(size_t& result, std::string_view str) noexcept {
 #endif
 }
 
-void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str) {
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str) {
     const auto decimal_index = str.find('.');
     assert(decimal_index != std::string::npos);
 
     return strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, str, decimal_index);
 }
 
-void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t decimal_index) {
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str, size_t decimal_index) {
     assert(str.at(decimal_index) == '.');
     assert(str.find('e') == std::string::npos);
 
@@ -131,18 +90,18 @@ void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::strin
     if(back_index == decimal_index){
         // Only trailing zeros, e.g. "2.0"
         fmpz_init_set_ui(fmpq_denref(f), 1);
-        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(f), lead);
+        fmpz_init_set_strview(fmpq_numref(f), lead);
     }else{
         std::string_view trail = str.substr(decimal_index+1, back_index-decimal_index);
         return strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, lead, trail);
     }
 }
 
-void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str_lead, std::string_view str_trail) {
+void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str_lead, std::string_view str_trail) {
     fmpz_t lead;
-    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(lead, str_lead);
+    fmpz_init_set_strview(lead, str_lead);
     fmpq_t tail;
-    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(tail), str_trail);
+    fmpz_init_set_strview(fmpq_numref(tail), str_trail);
 
     if(str_trail.length() >= std::numeric_limits<size_t>::digits10){
         _fmpz_promote(fmpq_denref(tail));
@@ -158,7 +117,7 @@ void strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::strin
     fmpz_clear(lead);
 }
 
-void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str) {
+void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str) {
     const auto decimal_index = str.find('.');
     assert(decimal_index != std::string::npos);
 
@@ -169,7 +128,7 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::st
 }
 
 void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
-    BigRational f, std::string_view str, size_t decimal_index, size_t e_index) {
+    fmpq_t f, std::string_view str, size_t decimal_index, size_t e_index) {
     strdecimal2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, str.substr(0, e_index));
 
     e_index++;
@@ -200,7 +159,7 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
         fmpz_t exponent;
         fmpz_init(exponent);
         fmpz_t exp;
-        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(exp, str);
+        fmpz_init_set_strview(exp, str);
         fmpz_t ten;
         fmpz_init_set_ui(ten, 10);
         fmpz_pow_fmpz(exponent, ten, exp);
@@ -212,16 +171,16 @@ void strscientific2bigrat_NULL_TERMINATED__NOT_THREADSAFE(
     fmpz_clear(copy);
 }
 
-void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(BigInteger f, std::string_view str) {
+void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(mpz_t f, std::string_view str) {
     strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(f, str, str.find('e'));
 }
 
-void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(BigInteger f, std::string_view str, size_t e_index) {
+void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(mpz_t f, std::string_view str, size_t e_index) {
     assert(str.find('.') == std::string::npos);
     assert(str.at(e_index) == 'e');
     assert(str.at(e_index+1) != '-');
 
-    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(f, str.substr(0, e_index));
+    mpz_init_set_strview(f, str.substr(0, e_index));
 
     std::string_view exp_str = str.substr(e_index+1);
 
@@ -238,7 +197,7 @@ void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(BigInteger f, std::string_
         DEBUG_DISABLE_SPOOF
 
         fmpz_t exp;
-        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(exp, exp_str);
+        fmpz_init_set_strview(exp, exp_str);
 
         fmpz_t ten;
         fmpz_init_set_ui(ten, 10);
@@ -253,16 +212,16 @@ void strsciint2bigint_NULL_TERMINATED__NOT_THREADSAFE(BigInteger f, std::string_
     }
 }
 
-void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str) {
+void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str) {
     strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(f, str, str.find('e'));
 }
 
-void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string_view str, size_t e_index) {
+void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(fmpq_t f, std::string_view str, size_t e_index) {
     assert(str.find('.') == std::string::npos);
     assert(str.at(e_index) == 'e');
     assert(str.at(e_index+1) == '-');
 
-    str2bigint_NULL_TERMINATED__NOT_THREADSAFE(fmpq_numref(f), str.substr(0, e_index));
+    fmpz_init_set_strview(fmpq_numref(f), str.substr(0, e_index));
 
     std::string_view exp_str = str.substr(e_index+2);
 
@@ -276,7 +235,7 @@ void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string
         DEBUG_DISABLE_SPOOF
 
         fmpz_t exp;
-        str2bigint_NULL_TERMINATED__NOT_THREADSAFE(exp, exp_str);
+        fmpz_init_set_strview(exp, exp_str);
 
         fmpz_t ten;
         fmpz_init_set_ui(ten, 10);
@@ -287,85 +246,5 @@ void strsciint2bigrat_NULL_TERMINATED__NOT_THREADSAFE(BigRational f, std::string
         fmpz_clear(exp);
     }
 }
-
-static size_t numBase10DigitsLowerBound(const mpz_t val) noexcept {
-    // return mpz_sizeinbase(val, 10);  // Doing computation here is silly, make a quick lower bound
-    return mpz_size(val) * std::numeric_limits<mp_limb_t>::digits10;
-}
-
-static size_t numBase10DigitsLowerBound(const fmpz_t val) noexcept {
-    // return fmpz_sizeinbase(val, 10);  // Doing computation here is silly, make a quick lower bound
-    return fmpz_size(val) * std::numeric_limits<mp_limb_t>::digits10;
-}
-
-void write_big_int(std::string& str, const BigInteger val) {
-    // Resize str to ensure sufficient capacity for the largest possible number
-    static constexpr size_t base = 10;
-    static constexpr size_t PLUS_ONE_FOR_SIGN = 1;
-    static constexpr size_t PLUS_ONE_FOR_NULL_TERMINATOR = 1;
-
-    const size_t max_digits = numBase10DigitsLowerBound(val) + (PLUS_ONE_FOR_SIGN + PLUS_ONE_FOR_NULL_TERMINATOR);
-    const size_t start_index = str.size();
-    str.resize(str.size() + max_digits);
-
-    // Append the number to the end of str
-    mpz_get_str(str.data() + start_index, base, val);
-
-    // Resize where prior allocation exceeded the actual need
-    const size_t null_terminator_index = str.find('\0', start_index);
-    str.resize(null_terminator_index);
-}
-
-static void write_big_int(std::string& str, const fmpz_t val, bool is_negative) {
-    // Resize str to ensure sufficient capacity for the largest possible number
-    static constexpr size_t base = 10;
-    static constexpr size_t PLUS_ONE_FOR_SIGN = 1;
-    static constexpr size_t PLUS_ONE_FOR_NULL_TERMINATOR = 1;
-
-    const size_t max_digits = fmpz_sizeinbase(val, base) + (PLUS_ONE_FOR_SIGN + PLUS_ONE_FOR_NULL_TERMINATOR);
-    const size_t start_index = str.size();
-    str.resize(str.size() + max_digits);
-
-    // Append the number to the end of str, overwriting any sign character
-    const char backup = str[start_index-1];
-    fmpz_get_str(str.data() + start_index - is_negative, base, val);
-    str[start_index-1] = backup;
-
-    // Resize where prior allocation exceeded the actual need
-    const size_t null_terminator_index = str.find('\0', start_index);
-    str.resize(null_terminator_index);
-}
-
-template<bool typeset_fraction> void write_big_rational(std::string& str, const BigRational val) {
-    const fmpz* num = fmpq_numref(val);
-    const fmpz* den = fmpq_denref(val);
-
-    if(typeset_fraction){
-        const bool is_negative = (fmpz_sgn(num) == -1);
-        if(is_negative) str += '-';
-        str += "⁜f⏴";
-        write_big_int(str, num, is_negative);
-        str += "⏵⏴";
-        write_big_int(str, den, false);
-        str += "⏵";
-    }else{
-        static constexpr size_t base = 10;
-        static constexpr size_t PLUS_ONE_FOR_SIGN = 1;
-        static constexpr size_t PLUS_ONE_FOR_NULL_TERMINATOR = 1;
-        static constexpr size_t PLUS_ONE_FOR_DIVISION = 1;
-        const size_t max_digits = numBase10DigitsLowerBound(num) + numBase10DigitsLowerBound(den)
-                                  + (PLUS_ONE_FOR_SIGN + PLUS_ONE_FOR_NULL_TERMINATOR + PLUS_ONE_FOR_DIVISION);
-        const size_t start_index = str.size();
-        str.resize(str.size() + max_digits);
-
-        _fmpq_get_str(str.data() + start_index, base, num, den);
-
-        // Resize where prior allocation exceeded the actual need
-        const size_t null_terminator_index = str.find('\0', start_index);
-        str.resize(null_terminator_index);
-    }
-}
-template void write_big_rational<false>(std::string&, const BigRational);
-template void write_big_rational<true>(std::string&, const BigRational);
 
 }  // namespace KiCAS2

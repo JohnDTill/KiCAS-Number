@@ -141,4 +141,26 @@ size_t knownfit_str2int(std::string_view str) noexcept {
     return result;
 }
 
+#if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
+union WideUnion {
+    DoubleInt words;
+    WideType whole;
+};
+
+DoubleInt knownfit_str2wideint(std::string_view str) noexcept {
+    assert(!str.empty());
+    #ifndef NDEBUG
+    for(const char ch : str) assert(ch >= '0' && ch <= '9');
+    #endif
+
+    WideUnion result;
+    const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result.whole);
+    assert(parse_result.ec != std::errc::invalid_argument);
+    assert(parse_result.ec != std::errc::result_out_of_range);
+    assert(parse_result.ptr == str.data()+str.size());
+
+    return result.words;
+}
+#endif
+
 }  // namespace KiCAS2
