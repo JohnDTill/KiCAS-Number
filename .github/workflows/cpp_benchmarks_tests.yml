@@ -126,4 +126,4 @@ jobs:
             BUILD_CONFIG_CTEST="-C Release"
           fi
 
-          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
+          ctest --test-dir build_test -L Benchmarks -V $BUILD_CONFIG_CTEST
