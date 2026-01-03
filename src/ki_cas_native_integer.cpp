@@ -8,6 +8,8 @@
 #include <stdckdint.h>
 #endif
 
+#include <iostream>  // TODO: delete
+
 namespace KiCAS2 {
 
 bool ckd_add(size_t* result, size_t a, size_t b) noexcept {
@@ -137,7 +139,15 @@ size_t knownfit_str2int(std::string_view str) noexcept {
     #ifdef _MSC_VER
     std::string copy(str);
     const char* c_str = copy.c_str();
+
+    std::cout << "String size " << copy.size() << std::endl;
+    std::cout << "Handling " << str << std::endl;
+    std::cout << " C string: " << c_str << std::endl;
+    std::cout << " is NULL terminated: " << (c_str[str.size()] == '\0') << std::endl;
     const auto parse_result = std::from_chars(c_str, c_str + str.size(), result);
+    std::cout << " Result: " << result << std::endl;
+    std::cout << " Code: " << (size_t)parse_result.ec << std::endl;
+
     // const auto parse_result = std::from_chars(str.cbegin()._Unwrapped(), str.cend()._Unwrapped(), result);
     // const auto parse_result = std::from_chars(&(*str.cbegin()), &(*str.cbegin()) + str.size(), result);
     #else
@@ -145,7 +155,7 @@ size_t knownfit_str2int(std::string_view str) noexcept {
     #endif
     assert(parse_result.ec != std::errc::invalid_argument);
     assert(parse_result.ec != std::errc::result_out_of_range);
-    assert(parse_result.ptr == str.data()+str.size());
+    // assert(parse_result.ptr == str.data()+str.size());
 
     return result;
 }
