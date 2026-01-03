@@ -132,25 +132,19 @@ size_t knownfit_str2int(std::string_view str) noexcept {
     for(const char ch : str) assert(ch >= '0' && ch <= '9');
     #endif
 
-    #if defined(_MSC_VER) && !defined(_WIN64)  // 32-bit
-    // MSVC x86 implementations of std::from_chars are prone to crash when parsing size_t
-    return std::stoul(std::string(str));
-    #else
-    size_t result;
-    const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result);
-
-    assert(parse_result.ec != std::errc::invalid_argument);
-    assert(parse_result.ec != std::errc::result_out_of_range);
-    assert(parse_result.ptr == str.data()+str.size());
-
-    return result;
-    #endif
+    const char* iter = str.data();
+    const char* end = iter + str.size();
+    size_t ans = (*iter - '0');
+    while(++iter != end) ans = ans * 10 + (*iter - '0');
+    return ans;
 }
 
 #if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
 union WideUnion {
     DoubleInt words;
     WideType whole;
+
+    WideUnion(WideType whole) noexcept : whole(whole) {}
 };
 
 DoubleInt knownfit_str2wideint(std::string_view str) noexcept {
@@ -159,13 +153,11 @@ DoubleInt knownfit_str2wideint(std::string_view str) noexcept {
     for(const char ch : str) assert(ch >= '0' && ch <= '9');
     #endif
 
-    WideUnion result;
-    const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result.whole);
-    assert(parse_result.ec != std::errc::invalid_argument);
-    assert(parse_result.ec != std::errc::result_out_of_range);
-    assert(parse_result.ptr == str.data()+str.size());
-
-    return result.words;
+    const char* iter = str.data();
+    const char* end = iter + str.size();
+    WideType ans = (*iter - '0');
+    while(++iter != end) ans = ans * 10 + (*iter - '0');
+    return WideUnion(ans).words;
 }
 #endif
 
