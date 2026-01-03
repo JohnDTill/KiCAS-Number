@@ -74,12 +74,11 @@ TEST_CASE("fmpz_init_set_strview (Flint word size x3)") {
 TEST_CASE("mpz_init_set_strview (tiny)") {
     const std::string str = "1337";
 
-    // TODO: find issue
-    // BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
-    //     mpz_t big_int;
-    //     meter.measure([&](){mpz_init_set_strview(big_int, str);});
-    //     mpz_clear(big_int);
-    // };
+    BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
+        mpz_t big_int;
+        meter.measure([&](){mpz_init_set_strview(big_int, str);});
+        mpz_clear(big_int);
+    };
 
     BENCHMARK_ADVANCED( "mpz_set_str" )(Catch::Benchmark::Chronometer meter) {
         mpz_t big_int;
@@ -91,12 +90,11 @@ TEST_CASE("mpz_init_set_strview (tiny)") {
 TEST_CASE("mpz_init_set_strview (word size)") {
     const std::string str = std::to_string(COEFF_MAX);
 
-    // TODO: find issue
-    // BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
-    //     mpz_t big_int;
-    //     meter.measure([&](){mpz_init_set_strview(big_int, str);});
-    //     mpz_clear(big_int);
-    // };
+    BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
+        mpz_t big_int;
+        meter.measure([&](){mpz_init_set_strview(big_int, str);});
+        mpz_clear(big_int);
+    };
 
     BENCHMARK_ADVANCED( "mpz_set_str" )(Catch::Benchmark::Chronometer meter) {
         mpz_t big_int;
