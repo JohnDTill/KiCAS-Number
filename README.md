@@ -10,7 +10,7 @@ The goal of this repo is to provide utility functions for interacting with numbe
 
 A secondary goal is to work through an example of how to dynamically link against the LGPL-licensed libraries GMP and Flint while using CI against various targets. Dynamic linking is important for digital rights compliance given the terms of the LGPL.
 
-[![C++ Tests](https://github.com/JohnDTill/KiCAS-Number/actions/workflows/cpp_integration_tests.yml/badge.svg)](https://github.com/JohnDTill/KiCAS-Number/actions/workflows/cpp_integration_tests.yml)
+[![C++ Tests](https://github.com/JohnDTill/KiCAS2-Numeric/actions/workflows/cpp_integration_tests.yml/badge.svg)](https://github.com/JohnDTill/KiCAS2-Numeric/actions/workflows/cpp_integration_tests.yml)
 
 ## License
 
