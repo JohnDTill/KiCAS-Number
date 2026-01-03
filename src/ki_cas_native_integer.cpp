@@ -134,9 +134,7 @@ size_t knownfit_str2int(std::string_view str) noexcept {
 
     #if defined(_MSC_VER) && !defined(_WIN64)  // 32-bit
     // MSVC x86 implementations of std::from_chars are prone to crash when parsing size_t
-    int64_t result;
-    const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result);
-    assert(result <= std::numeric_limits<size_t>::max());
+    return std::stoul(std::string(str));
     #else
     size_t result;
     const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result);
