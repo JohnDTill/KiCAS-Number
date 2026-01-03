@@ -115,7 +115,8 @@ jobs:
           VCPKG_ROOT_POSIX=$(wslpath "${VCPKG_ROOT}" 2>/dev/null || echo "${VCPKG_ROOT}")
           cmake -D CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT_POSIX/scripts/buildsystems/vcpkg.cmake \
             -D VCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-            -S . -B build_test "${CMAKE_FLAGS[@]}"
+            -S . -B build_test "${CMAKE_FLAGS[@]}" \
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         shell: bash

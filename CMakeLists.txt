@@ -57,6 +57,7 @@ add_test(NAME Tests COMMAND Tests)
 # Benchmark setup
 add_executable(Benchmarks
     benchmark/benchmark_big_num_wrapper.cpp
+    benchmark/benchmark_native_integer.cpp
     benchmark/benchmark_native_rational.cpp)
 set_property(TARGET Benchmarks PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
 target_include_directories(Benchmarks PUBLIC src)

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <charconv>
 #include <cmath>
+#include <flint/ulong_extras.h>
 
 #if __cplusplus >= 202302L
 #include <stdckdint.h>
@@ -50,7 +51,7 @@ bool ckd_sqrt(size_t* result, size_t arg) noexcept {
 
 bool ckd_cbrt(size_t* result, size_t arg) noexcept {
     // Adequate precision confirmed for 64-bit numbers, see tests
-    *result = static_cast<size_t>(std::cbrtf(static_cast<float>(arg))+0.5);
+    *result = n_cbrt(arg);
     return (*result) * (*result) * (*result) != arg;
 }
 
@@ -95,14 +96,14 @@ bool ckd_pow(size_t* result, size_t base, size_t power) noexcept {
 }
 
 size_t knownfit_pow(size_t base, size_t power) noexcept {
-    assert(base != 0 || power != 0);  // 0^0 is not generally defined
-
-    if(power == 0) return 1;
-    if(power == 1) return base;
-
-    const size_t tmp = knownfit_pow(base, power/2);
-    if(power%2 == 0) return knownfit_mul(tmp, tmp);
-    else return knownfit_mul(base, knownfit_mul(tmp, tmp));
+    #ifndef NDEBUG
+    size_t result;
+    const bool overflow = ckd_pow(&result, base, power);
+    assert(overflow == false);
+    return result;
+    #else
+    return n_pow(base, power);
+    #endif
 }
 
 void write_native_int(std::string& str, size_t val) {
