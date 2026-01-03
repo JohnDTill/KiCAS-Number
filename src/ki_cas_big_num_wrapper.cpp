@@ -3,6 +3,7 @@
 #include <cassert>
 #include "ki_cas_native_integer.h"
 #include "ki_cas_native_rational.h"
+#include <limits>
 
 #ifndef NDEBUG
 #include <memory.h>
