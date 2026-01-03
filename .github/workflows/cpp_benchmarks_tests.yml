@@ -1,7 +1,10 @@
-name: C++ Tests
-on: push
+name: C++ Benchmarks
+on:
+  pull_request:
+  push:
+    branches: main
 jobs:
-  cpp-tests:
+  cpp-benchmarks:
     strategy:
       fail-fast: false
       matrix:
@@ -112,24 +115,18 @@ jobs:
           VCPKG_ROOT_POSIX=$(wslpath "${VCPKG_ROOT}" 2>/dev/null || echo "${VCPKG_ROOT}")
           cmake -D CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT_POSIX/scripts/buildsystems/vcpkg.cmake \
             -D VCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-            -S . -B build_test "${CMAKE_FLAGS[@]}"
+            -S . -B build_test "${CMAKE_FLAGS[@]}" \
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         shell: bash
-        run: |
-          BUILD_CONFIG_CMAKE=""
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            BUILD_CONFIG_CMAKE="--config RelWithDebInfo"
-          fi
+        run: cmake --build build_test --target Benchmarks --config Release
 
-          cmake --build build_test --target Tests $BUILD_CONFIG_CMAKE
-
-      - name: Test
+      - name: Benchmark
         shell: bash
         run: |
-          BUILD_CONFIG_CTEST=""
           if [ "$RUNNER_OS" = "Windows" ]; then
-            BUILD_CONFIG_CTEST="-C RelWithDebInfo"
+            ./build_test/Release/Benchmarks.exe
+          else
+            ./build_test/Benchmarks
           fi
-
-          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST

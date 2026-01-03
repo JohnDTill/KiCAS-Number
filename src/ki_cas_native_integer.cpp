@@ -1,7 +1,9 @@
-#include "ki_cas_integer_math.h"
+#include "ki_cas_native_integer.h"
 
 #include <cassert>
+#include <charconv>
 #include <cmath>
+#include <flint/ulong_extras.h>
 
 #if __cplusplus >= 202302L
 #include <stdckdint.h>
@@ -49,7 +51,7 @@ bool ckd_sqrt(size_t* result, size_t arg) noexcept {
 
 bool ckd_cbrt(size_t* result, size_t arg) noexcept {
     // Adequate precision confirmed for 64-bit numbers, see tests
-    *result = static_cast<size_t>(std::cbrtf(static_cast<float>(arg))+0.5);
+    *result = n_cbrt(arg);
     return (*result) * (*result) * (*result) != arg;
 }
 
@@ -94,14 +96,70 @@ bool ckd_pow(size_t* result, size_t base, size_t power) noexcept {
 }
 
 size_t knownfit_pow(size_t base, size_t power) noexcept {
-    assert(base != 0 || power != 0);  // 0^0 is not generally defined
-
-    if(power == 0) return 1;
-    if(power == 1) return base;
-
-    const size_t tmp = knownfit_pow(base, power/2);
-    if(power%2 == 0) return knownfit_mul(tmp, tmp);
-    else return knownfit_mul(base, knownfit_mul(tmp, tmp));
+    #ifndef NDEBUG
+    size_t result;
+    const bool overflow = ckd_pow(&result, base, power);
+    assert(overflow == false);
+    return result;
+    #else
+    return n_pow(base, power);
+    #endif
 }
+
+void write_native_int(std::string& str, size_t val) {
+    constexpr size_t max_digits = std::numeric_limits<size_t>::digits10 + 1;
+    char buffer[max_digits];
+    const std::to_chars_result result = std::to_chars(buffer, buffer + max_digits, val);
+    assert(result.ec == std::errc());
+    str.append(buffer, result.ptr - buffer);
+}
+
+bool ckd_str2int(size_t* result, std::string_view str) noexcept {
+    assert(!str.empty());
+    #ifndef NDEBUG
+    for(const char ch : str) assert(ch >= '0' && ch <= '9');
+    #endif
+
+    const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), *result);
+    assert(parse_result.ec != std::errc::invalid_argument);
+    assert(parse_result.ec == std::errc::result_out_of_range || parse_result.ptr == str.data()+str.size());
+
+    return parse_result.ec == std::errc::result_out_of_range;
+}
+
+size_t knownfit_str2int(std::string_view str) noexcept {
+    assert(!str.empty());
+    #ifndef NDEBUG
+    for(const char ch : str) assert(ch >= '0' && ch <= '9');
+    #endif
+
+    const char* iter = str.data();
+    const char* end = iter + str.size();
+    size_t ans = (*iter - '0');
+    while(++iter != end) ans = ans * 10 + (*iter - '0');
+    return ans;
+}
+
+#if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
+union WideUnion {
+    DoubleInt words;
+    WideType whole;
+
+    WideUnion(WideType whole) noexcept : whole(whole) {}
+};
+
+DoubleInt knownfit_str2wideint(std::string_view str) noexcept {
+    assert(!str.empty());
+    #ifndef NDEBUG
+    for(const char ch : str) assert(ch >= '0' && ch <= '9');
+    #endif
+
+    const char* iter = str.data();
+    const char* end = iter + str.size();
+    WideType ans = (*iter - '0');
+    while(++iter != end) ans = ans * 10 + (*iter - '0');
+    return WideUnion(ans).words;
+}
+#endif
 
 }  // namespace KiCAS2
