@@ -76,7 +76,7 @@ void mpz_init_set_mutable_str(mpz_t f, std::string& str, size_t pos, size_t len)
         fmpz ptr = PTR_TO_COEFF(f);
         fmpz_set_uiui(&ptr, val.high, val.low);
 #endif
-    }else{
+    }else if(pos+len < str.size()){
         const size_t end_index = pos+len;
 
         // Backup the character at the end, and replace with '\0' so that GMP knows to stop parsing the int.
@@ -90,6 +90,10 @@ void mpz_init_set_mutable_str(mpz_t f, std::string& str, size_t pos, size_t len)
 
         // Restore the original str
         str[end_index] = backup;
+    }else{
+        mpz_init(f);
+        const auto code = mpz_set_str(f, str.data()+pos, 10);
+        assert(code == 0);
     }
 }
 
@@ -139,7 +143,7 @@ fmpz fmpz_from_mutable_str(std::string& str, size_t pos, size_t len) {
         fmpz_set_uiui(&f, val.high, val.low);
         return f;
 #endif
-    }else{
+    }else if(pos + len < str.size()){
         const size_t end_index = pos+len;
 
         // Backup the character at the end, and replace with '\0' so that GMP knows to stop parsing the int.
@@ -153,6 +157,12 @@ fmpz fmpz_from_mutable_str(std::string& str, size_t pos, size_t len) {
 
         // Restore the original str
         str[end_index] = backup;
+
+        return f;
+    }else{
+        fmpz f = 0;
+        const auto code = fmpz_set_str(&f, str.data()+pos, 10);
+        assert(code == 0);
 
         return f;
     }

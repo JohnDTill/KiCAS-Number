@@ -119,7 +119,6 @@ TEST_CASE("mpz_init_set_strview (tiny)") {
 
 TEST_CASE("mpz_init_set_strview (word size)") {
     std::string str = std::to_string(COEFF_MAX);
-    constexpr size_t max = std::numeric_limits<size_t>::max();
 
     BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
         mpz_t big_int;
