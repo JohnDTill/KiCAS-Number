@@ -68,10 +68,10 @@ void mpz_init_set_mutable_str(mpz_t f, std::string& str, size_t pos, size_t len)
     #endif
 
     if(str.size() <= std::numeric_limits<size_t>::digits10){
-        mpz_init_set_ui(f, knownfit_str2int(str));
+        mpz_init_set_ui(f, knownfit_str2int(std::string_view(str.data()+pos, len)));
 #if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
     }else if(str.size() <= std::numeric_limits<WideType>::digits10){
-        const DoubleInt val = knownfit_str2wideint(str);
+        const DoubleInt val = knownfit_str2wideint(std::string_view(str.data()+pos, len));
         mpz_init(f);
         fmpz ptr = PTR_TO_COEFF(f);
         fmpz_set_uiui(&ptr, val.high, val.low);
@@ -131,10 +131,10 @@ fmpz fmpz_from_mutable_str(std::string& str, size_t pos, size_t len) {
     #endif
 
     if(str.size() < COEFF_MAX_DIGITS){
-        return knownfit_str2int(str);
+        return knownfit_str2int(std::string_view(str.data()+pos, len));
 #if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
     }else if(str.size() <= std::numeric_limits<WideType>::digits10){
-        const DoubleInt val = knownfit_str2wideint(str);
+        const DoubleInt val = knownfit_str2wideint(std::string_view(str.data()+pos, len));
         fmpz f = 0;
         fmpz_set_uiui(&f, val.high, val.low);
         return f;

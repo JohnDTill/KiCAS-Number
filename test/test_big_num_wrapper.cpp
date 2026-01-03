@@ -136,7 +136,7 @@ TEST_CASE( "fmpq_abs_inplace" ) {
     DEBUG_REQUIRE(isAllGmpMemoryFreed());
 }
 
-TEST_CASE( "mpz_init_set_strview (safe)" ) {
+TEST_CASE( "mpz_init_set_strview" ) {
     mpz_t big_int;
 
     mpz_init_set_strview(big_int, "0");
@@ -166,7 +166,7 @@ TEST_CASE( "mpz_init_set_strview (safe)" ) {
     DEBUG_REQUIRE(isAllGmpMemoryFreed());
 }
 
-TEST_CASE( "mpz_init_set_strview (unsafe)" ) {
+TEST_CASE( "mpz_init_set_mutable_str" ) {
     mpz_t big_int;
     std::string input;
 
@@ -205,7 +205,7 @@ TEST_CASE( "mpz_init_set_strview (unsafe)" ) {
     DEBUG_REQUIRE(isAllGmpMemoryFreed());
 }
 
-TEST_CASE( "fmpz_init_set_strview (safe)" ) {
+TEST_CASE( "fmpz_init_set_strview" ) {
     fmpz_t big_int;
 
     fmpz_init_set_strview(big_int, "0");
