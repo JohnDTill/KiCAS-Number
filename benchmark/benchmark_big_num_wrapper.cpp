@@ -94,11 +94,12 @@ TEST_CASE("mpz_init_set_strview (word size)") {
     const std::string src = std::to_string(COEFF_MAX);
     const std::string_view str(src);
 
-    BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
-        mpz_t big_int;
-        meter.measure([&](){mpz_init_set_strview(big_int, str);});
-        mpz_clear(big_int);
-    };
+    // TODO: re-enable
+    // BENCHMARK_ADVANCED( "mpz_init_set_strview" )(Catch::Benchmark::Chronometer meter) {
+    //     mpz_t big_int;
+    //     meter.measure([&](){mpz_init_set_strview(big_int, str);});
+    //     mpz_clear(big_int);
+    // };
 
     BENCHMARK_ADVANCED( "mpz_set_str" )(Catch::Benchmark::Chronometer meter) {
         mpz_t big_int;
