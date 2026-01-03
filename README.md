@@ -17,7 +17,7 @@ A secondary goal is to work through an example of how to dynamically link agains
 This example repo is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ```[ascii-art]
-              ____
+              ____        J. Till
              /    \
             /   _  \
            |   / \  \
