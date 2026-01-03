@@ -138,13 +138,13 @@ size_t knownfit_str2int(std::string_view str) noexcept {
     #else
     size_t result;
     const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result);
-    #endif
 
     assert(parse_result.ec != std::errc::invalid_argument);
     assert(parse_result.ec != std::errc::result_out_of_range);
     assert(parse_result.ptr == str.data()+str.size());
 
     return result;
+    #endif
 }
 
 #if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
