@@ -88,7 +88,8 @@ void mpz_init_set_strview(mpz_t f, std::string_view str) {
         const DoubleInt val = knownfit_str2wideint(str);
         fmpz ptr = 0;
         fmpz_set_uiui(&ptr, val.high, val.low);
-        *f = *COEFF_TO_PTR(ptr);
+        if(COEFF_IS_MPZ(ptr)) *f = *COEFF_TO_PTR(ptr);
+        else mpz_init_set_ui(f, ptr);
     #endif
     }else{
         std::string copy(str);
