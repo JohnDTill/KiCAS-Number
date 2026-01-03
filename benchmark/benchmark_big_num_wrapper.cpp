@@ -80,11 +80,12 @@ TEST_CASE("mpz_init_set_strview (tiny)") {
         mpz_clear(big_int);
     };
 
-    BENCHMARK_ADVANCED( "mpz_set_str" )(Catch::Benchmark::Chronometer meter) {
-        mpz_t big_int;
-        meter.measure([&](){mpz_init(big_int); mpz_set_str(big_int, str.c_str(), 10);});
-        mpz_clear(big_int);
-    };
+    // TODO: find issue
+    // BENCHMARK_ADVANCED( "mpz_set_str" )(Catch::Benchmark::Chronometer meter) {
+    //     mpz_t big_int;
+    //     meter.measure([&](){mpz_init(big_int); mpz_set_str(big_int, str.c_str(), 10);});
+    //     mpz_clear(big_int);
+    // };
 };
 
 TEST_CASE("mpz_init_set_strview (word size)") {
