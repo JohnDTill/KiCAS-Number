@@ -64,4 +64,3 @@ add_executable(Benchmarks
 set_property(TARGET Benchmarks PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
 target_include_directories(Benchmarks PUBLIC src)
 target_link_libraries(Benchmarks PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)
-add_test(NAME Benchmarks COMMAND Benchmarks)

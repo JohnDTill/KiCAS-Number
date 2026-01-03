@@ -121,12 +121,6 @@ jobs:
         shell: bash
         run: cmake --build build_test --target Benchmarks --config Release
 
-      - name: Test
+      - name: Benchmark
         shell: bash
-        run: |
-          BUILD_CONFIG_CTEST=""
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            BUILD_CONFIG_CTEST="-C Release"
-          fi
-
-          ctest --test-dir build_test -L Benchmarks -V $BUILD_CONFIG_CTEST
+        run: ./build_test/Benchmarks

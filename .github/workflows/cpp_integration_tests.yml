@@ -132,4 +132,4 @@ jobs:
             BUILD_CONFIG_CTEST="-C RelWithDebInfo"
           fi
 
-          ctest --test-dir build_test -L Tests -V $BUILD_CONFIG_CTEST
+          ctest --test-dir build_test -V $BUILD_CONFIG_CTEST
