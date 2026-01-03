@@ -86,10 +86,9 @@ void mpz_init_set_strview(mpz_t f, std::string_view str) {
     #if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
     }else if(str.size() <= std::numeric_limits<WideType>::digits10){
         const DoubleInt val = knownfit_str2wideint(str);
-        mpz_init(f);
-        fmpz ptr = PTR_TO_COEFF(f);
+        fmpz ptr = 0;
         fmpz_set_uiui(&ptr, val.high, val.low);
-        f = COEFF_TO_PTR(ptr);
+        *f = *COEFF_TO_PTR(ptr);
     #endif
     }else{
         std::string copy(str);

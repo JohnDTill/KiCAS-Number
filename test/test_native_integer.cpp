@@ -168,7 +168,7 @@ TEST_CASE( "ckd_nrt (Exhaustive)" ) {
     std::optional<std::pair<size_t, size_t>> failing_nrt = std::nullopt;
 
     for(size_t exp = 4; exp <= max_exponent; exp++){
-        constexpr double fudge_factor = 1e-6;  // EVENTUALLY: this keeps solving as 2^64, which is out of range
+        constexpr double fudge_factor = 1e-6;  // This keeps solving as 2^64, which is out of range
         const size_t max_base = std::pow(MAX, 1.0/exp) - fudge_factor;
 
         for(size_t base = 0; base <= max_base; base++){
@@ -207,7 +207,7 @@ TEST_CASE( "ckd_pow (More thorough)" ) {
     std::optional<std::pair<size_t, size_t>> failing_pow = std::nullopt;
 
     for(size_t exp = 2; exp <= max_exp; exp++){
-        constexpr double fudge_factor = 1e-6;  // EVENTUALLY: this keeps solving as 2^64, which is out of range
+        constexpr double fudge_factor = 1e-6;  // This keeps solving as 2^64, which is out of range
         const size_t max_base = std::pow(MAX, 1.0/exp) - fudge_factor;
 
         const bool overflow = ckd_pow(&result, max_base, exp);
