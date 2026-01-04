@@ -6,6 +6,7 @@
 #include <limits>
 
 #ifndef NDEBUG
+#include <iostream>
 #include <memory.h>
 #include <shared_mutex>
 #include <unordered_set>
@@ -272,7 +273,7 @@ fmpq fmpq_from_scientific_str(std::string_view str) {
     return lhs;
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(TEST_GMP_LEAKS)
 static std::allocator<size_t> allocator;
 static std::unordered_set<const void*> allocated_memory;
 static std::shared_mutex allocation_mutex;
@@ -307,7 +308,14 @@ static void* leakTrackingRealloc(void* p, size_t old, size_t n) {
 }
 
 struct Init {
-    Init(){ mp_set_memory_functions(leakTrackingAlloc, leakTrackingRealloc, leakTrackingFree); }
+    Init(){
+        mp_set_memory_functions(leakTrackingAlloc, leakTrackingRealloc, leakTrackingFree);
+        std::cout << "GMP leak checking is active" << std::endl;
+
+        // EVENTUALLY: could also use __flint_set_memory_functions
+        // Unfortunately this is flaky. It would be good to get rid of the TEST_GMP_LEAKS macro,
+        // and always use these tests in debug builds.
+    }
 };
 
 static Init memoryTrackingInit;

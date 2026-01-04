@@ -80,13 +80,13 @@ fmpq fmpq_from_decimal_str(std::string_view str, size_t decimal_index);
 /// or `'.' ['0'-'9']+ 'e' ('+' | '-')? ['0'-'9']+`
 fmpq fmpq_from_scientific_str(std::string_view str);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(TEST_GMP_LEAKS)
 bool isAllGmpMemoryFreed() noexcept;
-#define DEBUG_REQUIRE(x) REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
+#define LEAK_CHECK_REQUIRE(x) REQUIRE(x)
+#define LEAK_CHECK_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
 #else
-#define DEBUG_REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x)
+#define LEAK_CHECK_REQUIRE(x)
+#define LEAK_CHECK_REQUIRE_FALSE(x)
 #endif
 
 }
