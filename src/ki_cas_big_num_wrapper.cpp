@@ -6,6 +6,7 @@
 #include <limits>
 
 #ifndef NDEBUG
+#include <iostream>
 #include <memory.h>
 #include <shared_mutex>
 #include <unordered_set>
@@ -383,7 +384,12 @@ void resetMemoryTracking() noexcept {
 
 bool isAllGmpMemoryFreed_resetOnFalse() noexcept {
     const bool is_free = isAllGmpMemoryFreed();
-    if(!is_free) resetMemoryTracking();
+    if(!is_free){
+        std::cout << "Unfreed GMP/Flint allocations:\n";
+        for(const auto entry : allocated_memory) std::cout << "   " << entry << '\n';
+        std::cout.flush();
+        resetMemoryTracking();
+    }
     return is_free;
 }
 #endif

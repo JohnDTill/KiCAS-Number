@@ -273,24 +273,32 @@ TEST_CASE( "write_big_rational" ) {
         fmpq_set_ui(big_num, 3, 2);
         write_big_rational<PLAINTEXT_OUTPUT>(str, big_num);
         REQUIRE(str == "x + 3/2");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("typeset basic"){
         fmpq_set_ui(big_num, 3, 2);
         write_big_rational<TYPESET_OUTPUT>(str, big_num);
         REQUIRE(str == "x + ⁜f⏴3⏵⏴2⏵");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("plaintext basic negative"){
         fmpq_set_si(big_num, -3, 2);
         write_big_rational<PLAINTEXT_OUTPUT>(str, big_num);
         REQUIRE(str == "x + -3/2");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("typeset basic negative"){
         fmpq_set_si(big_num, -3, 2);
         write_big_rational<TYPESET_OUTPUT>(str, big_num);
         REQUIRE(str == "x + -⁜f⏴3⏵⏴2⏵");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("plaintext big"){
@@ -298,6 +306,8 @@ TEST_CASE( "write_big_rational" ) {
         fmpz_fac_ui(den, 30);
         write_big_rational<PLAINTEXT_OUTPUT>(str, big_num);
         REQUIRE(str == "x + 1/265252859812191058636308480000000");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("typeset big"){
@@ -305,6 +315,8 @@ TEST_CASE( "write_big_rational" ) {
         fmpz_fac_ui(den, 30);
         write_big_rational<TYPESET_OUTPUT>(str, big_num);
         REQUIRE(str == "x + ⁜f⏴1⏵⏴265252859812191058636308480000000⏵");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("plaintext big negative"){
@@ -312,6 +324,8 @@ TEST_CASE( "write_big_rational" ) {
         fmpz_fac_ui(den, 30);
         write_big_rational<PLAINTEXT_OUTPUT>(str, big_num);
         REQUIRE(str == "x + -1/265252859812191058636308480000000");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
 
     SECTION("typeset big negative"){
@@ -319,11 +333,9 @@ TEST_CASE( "write_big_rational" ) {
         fmpz_fac_ui(den, 30);
         write_big_rational<TYPESET_OUTPUT>(str, big_num);
         REQUIRE(str == "x + -⁜f⏴1⏵⏴265252859812191058636308480000000⏵");
+        fmpq_clear(big_num);
+        DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
     }
-
-    fmpq_clear(big_num);
-
-    DEBUG_REQUIRE(isAllGmpMemoryFreed_resetOnFalse());
 }
 
 TEST_CASE( "fmpq_from_decimal_str" ) {
