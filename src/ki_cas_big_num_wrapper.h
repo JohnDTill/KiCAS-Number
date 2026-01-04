@@ -6,6 +6,29 @@
 #endif
 
 #include <gmp.h>
+
+#ifndef NDEBUG
+namespace KiCAS2 {
+
+bool isAllGmpMemoryFreed() noexcept;
+
+void* __leakTrackingAlloc(size_t n);
+void __leakTrackingFree(void* p, size_t old) noexcept;
+void* __leakTrackingRealloc(void* p, size_t old, size_t n);
+
+struct __Init {
+    __Init(){ mp_set_memory_functions(__leakTrackingAlloc, __leakTrackingRealloc, __leakTrackingFree); }
+};
+
+inline __Init __memoryTrackingInit;
+}
+#define DEBUG_REQUIRE(x) REQUIRE(x)
+#define DEBUG_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
+#else
+#define DEBUG_REQUIRE(x)
+#define DEBUG_REQUIRE_FALSE(x)
+#endif
+
 #include <flint/fmpq.h>
 #include <flint/fmpz.h>
 
@@ -79,15 +102,6 @@ fmpq fmpq_from_decimal_str(std::string_view str, size_t decimal_index);
 /// `['0'-'9']+ ('.' ['0'-'9']*)? 'e' ('+' | '-')? ['0'-'9']+`.
 /// or `'.' ['0'-'9']+ 'e' ('+' | '-')? ['0'-'9']+`
 fmpq fmpq_from_scientific_str(std::string_view str);
-
-#ifndef NDEBUG
-bool isAllGmpMemoryFreed() noexcept;
-#define DEBUG_REQUIRE(x) REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
-#else
-#define DEBUG_REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x)
-#endif
 
 }
 
