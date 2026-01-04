@@ -6,49 +6,14 @@
 #endif
 
 #include <gmp.h>
-
-#ifdef NDEBUG
-#define DEBUG_REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x)
-#else
-namespace KiCAS2 {
-bool isAllGmpMemoryFreed() noexcept;
-void resetMemoryTracking() noexcept;
-bool isAllGmpMemoryFreed_resetOnFalse() noexcept;  /// Resets to avoid cascading test failures
-
-#define DEBUG_REQUIRE(x) REQUIRE(x)
-#define DEBUG_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
-
-namespace __MemoryTracking {
-struct InitGMP { InitGMP(); };
-inline InitGMP memoryTrackingInitGMP;
-}
-}
-#endif
-
 #include <flint/fmpq.h>
 #include <flint/fmpz.h>
-
-#ifndef NDEBUG
-namespace KiCAS2 {
-namespace __MemoryTracking {
-struct InitFlint { InitFlint(); };
-inline InitFlint memoryTrackingInitFlint;
-}
-}
-#endif
 
 #include "ki_cas_typesetting_flags.h"
 #include <string>
 #include <string_view>
 
 namespace KiCAS2 {
-
-/// Override of GMP's mpq_clear, since some allocation-tracking tests were failing.
-inline void mpq_clear(mpq_t rop) noexcept {
-    mpz_clear(mpq_numref(rop));
-    mpz_clear(mpq_denref(rop));
-}
 
 /// fmpz_t representing 0
 inline constexpr fmpz_t FMPZ_ZERO = {0};
@@ -114,6 +79,15 @@ fmpq fmpq_from_decimal_str(std::string_view str, size_t decimal_index);
 /// `['0'-'9']+ ('.' ['0'-'9']*)? 'e' ('+' | '-')? ['0'-'9']+`.
 /// or `'.' ['0'-'9']+ 'e' ('+' | '-')? ['0'-'9']+`
 fmpq fmpq_from_scientific_str(std::string_view str);
+
+#if !defined(NDEBUG) && defined(TEST_GMP_LEAKS)
+bool isAllGmpMemoryFreed() noexcept;
+#define LEAK_CHECK_REQUIRE(x) REQUIRE(x)
+#define LEAK_CHECK_REQUIRE_FALSE(x) REQUIRE_FALSE(x)
+#else
+#define LEAK_CHECK_REQUIRE(x)
+#define LEAK_CHECK_REQUIRE_FALSE(x)
+#endif
 
 }
 

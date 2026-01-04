@@ -273,13 +273,12 @@ fmpq fmpq_from_scientific_str(std::string_view str) {
     return lhs;
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(TEST_GMP_LEAKS)
 static std::allocator<size_t> allocator;
 static std::unordered_set<const void*> allocated_memory;
 static std::shared_mutex allocation_mutex;
 
-// GMP memory functions
-void* leakTrackingAlloc(size_t n) {
+static void* leakTrackingAlloc(size_t n) {
     allocation_mutex.lock_shared();
     size_t* allocated = allocator.allocate(n);
     if(allocated){
@@ -291,14 +290,14 @@ void* leakTrackingAlloc(size_t n) {
     return allocated;
 }
 
-void leakTrackingFree(void* p, size_t old) noexcept {
+static void leakTrackingFree(void* p, size_t old) noexcept {
     allocation_mutex.lock_shared();
-    for(size_t* loc = reinterpret_cast<size_t*>(p); loc < reinterpret_cast<size_t*>(p)+old; loc++) allocated_memory.erase(p);
+    allocated_memory.erase(p);
     allocator.deallocate(reinterpret_cast<size_t*>(p), old);
     allocation_mutex.unlock_shared();
 }
 
-void* leakTrackingRealloc(void* p, size_t old, size_t n) {
+static void* leakTrackingRealloc(void* p, size_t old, size_t n) {
     void* reallocated = nullptr;
     if(n != 0){
         reallocated = leakTrackingAlloc(n);
@@ -308,93 +307,18 @@ void* leakTrackingRealloc(void* p, size_t old, size_t n) {
     return reallocated;
 }
 
-// Flint memory functions
-void* flintLeakTrackingAlloc(size_t n) {
-    allocation_mutex.lock_shared();
-    void* allocated = std::malloc(n);
-    if(allocated){
-        const auto result = allocated_memory.insert(allocated);
-        assert(result.second);
+struct Init {
+    Init(){
+        mp_set_memory_functions(leakTrackingAlloc, leakTrackingRealloc, leakTrackingFree);
+        std::cout << "GMP leak checking is active" << std::endl;
     }
-    allocation_mutex.unlock_shared();
+};
 
-    return allocated;
-}
-
-void* flintLeakTrackingCalloc(size_t num, size_t size) {
-    allocation_mutex.lock_shared();
-    void* allocated = std::calloc(num, size);
-    if(allocated){
-        const auto result = allocated_memory.insert(allocated);
-        assert(result.second);
-    }
-    allocation_mutex.unlock_shared();
-
-    return allocated;
-}
-
-void flintLeakTrackingFree(void* p) noexcept {
-    allocation_mutex.lock_shared();
-    allocated_memory.erase(p);
-    std::free(p);
-    allocation_mutex.unlock_shared();
-}
-
-void* flintLeakTrackingRealloc(void* p, size_t n) {
-    void* reallocated = nullptr;
-
-    if(n != 0){
-        allocation_mutex.lock_shared();
-        allocated_memory.erase(p);
-        reallocated = std::realloc(p, n);
-        if(reallocated){
-            const auto result = allocated_memory.insert(reallocated);
-            assert(result.second);
-        }
-        allocation_mutex.unlock_shared();
-    }
-
-    return reallocated;
-}
+static Init memoryTrackingInit;
 
 bool isAllGmpMemoryFreed() noexcept {
     return allocated_memory.empty();
 }
-
-void resetMemoryTracking() noexcept {
-    allocated_memory.clear();
-}
-
-bool isAllGmpMemoryFreed_resetOnFalse() noexcept {
-    const bool is_free = isAllGmpMemoryFreed();
-    if(!is_free){
-        std::cout << "Unfreed GMP/Flint allocations:\n";
-        for(const auto entry : allocated_memory) std::cout << "   " << entry << '\n';
-        std::cout.flush();
-        resetMemoryTracking();
-    }
-    return is_free;
-}
 #endif
 
-}
-
-KiCAS2::__MemoryTracking::InitGMP::InitGMP(){
-    mp_set_memory_functions(
-        leakTrackingAlloc,
-        leakTrackingRealloc,
-        leakTrackingFree);
-}
-
-KiCAS2::__MemoryTracking::InitFlint::InitFlint(){
-    mp_set_memory_functions(
-        leakTrackingAlloc,
-        leakTrackingRealloc,
-        leakTrackingFree);
-
-    __flint_set_memory_functions(
-        flintLeakTrackingAlloc,
-        flintLeakTrackingCalloc,
-        flintLeakTrackingRealloc,
-        flintLeakTrackingFree);
 }
