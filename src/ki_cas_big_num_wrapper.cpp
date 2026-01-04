@@ -311,6 +311,10 @@ struct Init {
     Init(){
         mp_set_memory_functions(leakTrackingAlloc, leakTrackingRealloc, leakTrackingFree);
         std::cout << "GMP leak checking is active" << std::endl;
+
+        // EVENTUALLY: could also use __flint_set_memory_functions
+        // Unfortunately this is flaky. It would be good to get rid of the TEST_GMP_LEAKS macro,
+        // and always use these tests in debug builds.
     }
 };
 
