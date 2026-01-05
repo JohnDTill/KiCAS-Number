@@ -9,9 +9,17 @@ jobs:
           - os: ubuntu-latest
             compiler: gcc
             triplet: x64-linux-dynamic
+          # - os: ubuntu-latest
+          #   compiler: gcc
+          #   arch: x86
+          #   triplet: x86-linux-dynamic
           - os: ubuntu-latest
             compiler: clang
             triplet: x64-linux-dynamic
+          # - os: ubuntu-latest
+          #   compiler: clang
+          #   arch: x86
+          #   triplet: x86-linux-dynamic
           - os: macos-latest
             compiler: clang
             triplet: x64-osx-dynamic
@@ -25,6 +33,11 @@ jobs:
           - os: windows-latest
             compiler: mingw
             triplet: x64-mingw-dynamic
+            host_triplet: x64-mingw-static
+          # - os: windows-latest
+          #   compiler: mingw
+          #   arch: x86
+          #   triplet: x86-mingw-dynamic
           - os: ubuntu-24.04-arm
             compiler: gcc
             triplet: arm64-linux-dynamic
@@ -96,10 +109,13 @@ jobs:
             CMAKE_FLAGS+=("-D" "CONFIRM_32BIT=ON")
           fi
 
+          if [ ${{ matrix.host_triplet }} ]; then
+            CMAKE_FLAGS+=("-D" "VCPKG_HOST_TRIPLET=${{ matrix.host_triplet }}")
+          fi
+
           VCPKG_ROOT_POSIX=$(wslpath "${VCPKG_ROOT}" 2>/dev/null || echo "${VCPKG_ROOT}")
           cmake -D CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT_POSIX/scripts/buildsystems/vcpkg.cmake \
             -D VCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
-            -D VCPKG_HOST_TRIPLET=${{ matrix.triplet }} \
             -S . -B build_test "${CMAKE_FLAGS[@]}"
 
       - name: Build
