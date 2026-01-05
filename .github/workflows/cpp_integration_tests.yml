@@ -9,17 +9,19 @@ jobs:
           - os: ubuntu-latest
             compiler: gcc
             triplet: x64-linux-dynamic
-          # - os: ubuntu-latest
-          #   compiler: gcc
-          #   arch: x86
-          #   triplet: x86-linux-dynamic
+          - os: ubuntu-latest
+            compiler: gcc
+            arch: x86
+            triplet: x86-linux-dynamic
+            host_triplet: x86-linux
           - os: ubuntu-latest
             compiler: clang
             triplet: x64-linux-dynamic
-          # - os: ubuntu-latest
-          #   compiler: clang
-          #   arch: x86
-          #   triplet: x86-linux-dynamic
+          - os: ubuntu-latest
+            compiler: clang
+            arch: x86
+            triplet: x86-linux-dynamic
+            host_triplet: x86-linux
           - os: macos-latest
             compiler: clang
             triplet: x64-osx-dynamic
@@ -34,10 +36,11 @@ jobs:
             compiler: mingw
             triplet: x64-mingw-dynamic
             host_triplet: x64-mingw-static
-          # - os: windows-latest
-          #   compiler: mingw
-          #   arch: x86
-          #   triplet: x86-mingw-dynamic
+          - os: windows-latest
+            compiler: mingw
+            arch: x86
+            triplet: x86-mingw-dynamic
+            host_triplet: x86-mingw-static
           - os: ubuntu-24.04-arm
             compiler: gcc
             triplet: arm64-linux-dynamic
@@ -53,6 +56,21 @@ jobs:
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_binary_cache,readwrite
     steps:
       - uses: actions/checkout@v6
+
+      - uses: msys2/setup-msys2@v2
+        if: ${{ matrix.compiler == "mingw" }}
+        with:
+          update: true
+          msystem: MINGW64
+          install: >
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-cmake
+            autoconf
+            automake
+            libtool
+            m4
+            make
 
       - name: Setup
         shell: bash
