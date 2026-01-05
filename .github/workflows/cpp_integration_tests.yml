@@ -47,19 +47,13 @@ jobs:
           elif [[ "${{ matrix.compiler }}" == "clang" ]]; then
             export CC=clang
             export CXX=clang++
-          elif [[ "${{ matrix.compiler }}" == "mingw" ]]; then
-            export CC=x86_64-w64-mingw32-gcc
-            export CXX=x86_64-w64-mingw32-g++
           fi
 
           mkdir ${GITHUB_WORKSPACE}/vcpkg_binary_cache
 
       - name: Apt dependencies
-        shell: bash
-        run: |
-          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            brew install m4 autoconf automake libtool
-          fi
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: brew install m4 autoconf automake libtool
 
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
