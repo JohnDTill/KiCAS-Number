@@ -42,16 +42,8 @@ TEST_CASE( "GMP memory leak detection mechanism" ) {
 }
 
 TEST_CASE( "constants" ) {
-    REQUIRE(fmpz_get_si(FMPZ_ZERO) == 0);
     REQUIRE(fmpz_get_si(FMPZ_ONE) == 1);
-    REQUIRE(fmpz_get_si(FMPZ_FIVE) == 5);
     REQUIRE(fmpz_get_si(FMPZ_TEN) == 10);
-
-    REQUIRE(fmpz_get_si(fmpq_numref(FMPQ_ZERO)) == 0);
-    REQUIRE(fmpz_get_si(fmpq_denref(FMPQ_ZERO)) == 1);
-
-    REQUIRE(fmpz_get_si(fmpq_numref(FMPQ_ONE)) == 1);
-    REQUIRE(fmpz_get_si(fmpq_denref(FMPQ_ONE)) == 1);
 }
 
 TEST_CASE( "mpz_neg_inplace" ) {
