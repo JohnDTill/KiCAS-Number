@@ -270,3 +270,13 @@ TEST_CASE( "ckd_str2int" ) {
     assert(too_large_int.back() >= '0' && too_large_int.back() <= '9');
     REQUIRE(true == ckd_str2int(&result, too_large_int));
 }
+
+TEST_CASE( "ckd_str2int_valid_region" ) {
+    size_t result;
+
+    std::string str("1234");
+    std::string_view view(str.data()+1, 2);
+
+    REQUIRE_FALSE(ckd_str2int(&result, view));
+    REQUIRE(result == 23);
+}

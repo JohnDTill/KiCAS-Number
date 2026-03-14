@@ -204,7 +204,7 @@ TEST_CASE( "fmpz_init_set_strview" ) {
     LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
 }
 
-TEST_CASE( "write_big_int" ) {
+TEST_CASE( "write_big_int (mpz_t)" ) {
     std::string str = "x + ";
     mpz_t big_num;
 
@@ -236,6 +236,42 @@ TEST_CASE( "write_big_int" ) {
     }
 
     mpz_clear(big_num);
+
+    LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
+}
+
+TEST_CASE( "write_big_int (fmpz_t)" ) {
+    std::string str = "x + ";
+    fmpz_t big_num;
+
+    SECTION("Basic"){
+        fmpz_init_set_ui(big_num, 42);
+        write_big_int(str, big_num);
+        REQUIRE(str == "x + 42");
+    }
+
+    SECTION("Negative"){
+        fmpz_init_set_si(big_num, -42);
+        write_big_int(str, big_num);
+        REQUIRE(str == "x + -42");
+    }
+
+    SECTION("Big number"){
+        fmpz_init(big_num);
+        fmpz_fac_ui(big_num, 30);
+        write_big_int(str, big_num);
+        REQUIRE(str == "x + 265252859812191058636308480000000");
+    }
+
+    SECTION("Big number negative"){
+        fmpz_init(big_num);
+        fmpz_fac_ui(big_num, 30);
+        fmpz_mul_si(big_num, big_num, -1);
+        write_big_int(str, big_num);
+        REQUIRE(str == "x + -265252859812191058636308480000000");
+    }
+
+    fmpz_clear(big_num);
 
     LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
 }
