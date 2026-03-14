@@ -35,7 +35,21 @@ TEST_CASE( "strdecimal2floatingpoint" ){
     REQUIRE( std::abs(strdecimal2floatingpoint("1234") - 1234.0) < 1e-9 );
 }
 
+TEST_CASE( "strdecimal2floatingpoint_valid_region" ){
+    std::string str("1234");
+    std::string_view view(str.data()+1, 2);
+
+    REQUIRE( std::abs(strdecimal2floatingpoint(view) - 23.0) < 1e-9 );
+}
+
 TEST_CASE( "strscientific2floatingpoint" ){
     REQUIRE( std::abs(strscientific2floatingpoint("0.42e2")) - 42.0 < 1e-9 );
     REQUIRE( std::abs(strscientific2floatingpoint("12.34e-2")) - 0.1234 < 1e-9 );
+}
+
+TEST_CASE( "strscientific2floatingpoint_valid_region" ){
+    std::string str("12e34");
+    std::string_view view(str.data()+1, 3);
+
+    REQUIRE( std::abs(strscientific2floatingpoint(view) - 2e3) < 1e-9 );
 }

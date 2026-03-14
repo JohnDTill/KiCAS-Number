@@ -54,6 +54,9 @@ void fmpz_init_set_strview(fmpz_t f, std::string_view str);
 /// Append an mpz_t to the end of the string
 void write_big_int(std::string& str, const mpz_t val);
 
+/// Append an fmpz_t to the end of the string
+void write_big_int(std::string& str, const fmpz_t val);
+
 /// Append an fmpq_t to the end of the string
 template<bool typeset_fraction=false> void write_big_rational(std::string& str, const fmpq_t val);
 

@@ -153,6 +153,24 @@ void write_big_int(std::string& str, const mpz_t val) {
     str.resize(null_terminator_index);
 }
 
+void write_big_int(std::string& str, const fmpz_t val) {
+    // Resize str to ensure sufficient capacity for the largest possible number
+    static constexpr size_t base = 10;
+    static constexpr size_t PLUS_ONE_FOR_SIGN = 1;
+    static constexpr size_t PLUS_ONE_FOR_NULL_TERMINATOR = 1;
+
+    const size_t max_digits = fmpz_sizeinbase(val, base) + (PLUS_ONE_FOR_SIGN + PLUS_ONE_FOR_NULL_TERMINATOR);
+    const size_t start_index = str.size();
+    str.resize(str.size() + max_digits);
+
+    // Append the number to the end of str
+    fmpz_get_str(str.data() + start_index, base, val);
+
+    // Resize where prior allocation exceeded the actual need
+    const size_t null_terminator_index = str.find('\0', start_index);
+    str.resize(null_terminator_index);
+}
+
 static void write_big_int(std::string& str, const fmpz_t val, bool is_negative) {
     // Resize str to ensure sufficient capacity for the largest possible number
     static constexpr size_t base = 10;
