@@ -25,7 +25,8 @@ FloatingPoint strdecimal2floatingpoint(std::string_view str) noexcept {
     const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result, std::chars_format::fixed);
     assert(parse_result.ptr == str.data()+str.size());
 #else
-    result = std::strtold(str.data(), nullptr);
+    // Must allocate to avoid reading past end of view, e.g. parsing view of "23" from a string "1234"
+    result = std::stold(std::string(str));
 #endif
 
     return result;
@@ -38,7 +39,8 @@ FloatingPoint strscientific2floatingpoint(std::string_view str) noexcept {
     const auto parse_result = std::from_chars(str.data(), str.data() + str.size(), result, std::chars_format::scientific);
     assert(parse_result.ptr == str.data()+str.size());
 #else
-    result = std::strtold(str.data(), nullptr);
+    // Must allocate to avoid reading past end of view, e.g. parsing view of "23" from a string "1234"
+    result = std::stold(std::string(str));
 #endif
 
     return result;
