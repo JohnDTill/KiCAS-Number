@@ -33,7 +33,13 @@ constexpr size_t powers_of_ten[] = {
     10000000,
     100000000,
     1000000000uLL,
-#if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
+    // ^^^ 32-bit ^^^
+    // vvv 64-bit vvv
+#if defined(__x86_64__) ||\
+    defined(__aarch64__) ||\
+    defined( _WIN64 ) ||\
+    defined(__ppc64__) ||\
+    defined(__s390x__)
     10000000000,
     100000000000,
     1000000000000,
