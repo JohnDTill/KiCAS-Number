@@ -1,11 +1,9 @@
 name: Non-vcpkg build with system libraries
 description: Verify build process using system libraries for targets which do not support vcpkg
-on: push
-# TODO: re-institute
-# on:
-#   pull_request:
-#   push:
-#     branches: main
+on:
+  pull_request:
+  push:
+    branches: main
 jobs:
   build-with-system-libraries:
     runs-on: ubuntu-latest
@@ -16,7 +14,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libflint-dev catch2
       - name: Configure
-        run: cmake -S . -B build_test
+        run: cmake -S . -B build_test -D DO_NOT_TEST_GMP_LEAKS=ON
       - name: Build
         run: cmake --build build_test --target Tests
       - name: Test

@@ -48,14 +48,14 @@ std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexcept {
 
 template<typename uintx_t, bool is_negative=false>
 void mpz_init_set_x(mpz_t lhs, uintx_t rhs) {
-    constexpr int num_bytes = sizeof(uintx_t);
-    constexpr int num_bits = num_bytes*8;
+    constexpr int num_bits = uintx_t::num_bits;
+    constexpr int num_bytes = num_bits/8;
     constexpr int num_limbs = num_bytes / sizeof(mp_limb_t);
 
     mpz_init2(lhs, num_bits);
     *reinterpret_cast<uintx_t*>(lhs->_mp_d) = rhs;
 
-    if(sizeof(uintx_t) == sizeof(uint128_t) && sizeof(mp_limb_t) == sizeof(uint64_t)){
+    if(uintx_t::num_bits == 128 && sizeof(mp_limb_t) == sizeof(uint64_t)){
         const int size = num_limbs - (rhs <= std::numeric_limits<uint64_t>::max());
         lhs->_mp_size = is_negative ? (-size) : size;
     }else{
@@ -84,7 +84,7 @@ template<bool is_negative=false> fmpz u256_to_fmpz(uint256_t val) {
     fmpz_set_ui_array(
         &out,
         reinterpret_cast<const mp_limb_t*>(&val[0]),
-        sizeof(uint256_t)/sizeof(mp_limb_t));
+        32/sizeof(mp_limb_t));
     if(is_negative) COEFF_TO_PTR(out)->_mp_size *= -1;
     return out;
 }
