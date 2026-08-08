@@ -18,11 +18,14 @@ set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 include_directories(${INC})
 include_directories(${SRC})
+include_directories(${SRC}/external)
 
 set(SRC_FILES
     ${SRC}/arch_macros.h
     ${SRC}/ki_cas_big_num_wrapper.cpp
     ${INC}/ki_cas_big_num_wrapper.h
+    ${SRC}/ki_cas_kmpz.cpp
+    ${INC}/ki_cas_kmpz.h
     ${SRC}/ki_cas_native_float.cpp
     ${INC}/ki_cas_native_float.h
     ${SRC}/ki_cas_native_integer.cpp
@@ -81,7 +84,9 @@ add_executable(Tests
     test/unittest/test_big_num_wrapper.cpp
     test/unittest/test_native_float.cpp
     test/unittest/test_native_integer.cpp
-    test/unittest/test_native_rational.cpp)
+    test/unittest/test_native_rational.cpp
+    test/unittest/test_kmpz.cpp)
+target_compile_definitions(Tests PRIVATE PRIVATE=public)
 target_include_directories(Tests PUBLIC src)
 target_link_libraries(Tests PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)
 add_test(NAME Tests COMMAND Tests)
@@ -91,7 +96,9 @@ add_executable(Benchmarks
     test/benchmark/unit_benchmark/benchmark_big_num_wrapper.cpp
     test/benchmark/unit_benchmark/benchmark_native_integer.cpp
     test/benchmark/unit_benchmark/benchmark_native_rational.cpp
+    test/benchmark/unit_benchmark/benchmark_kmpz.cpp
 )
+target_compile_definitions(Benchmarks PRIVATE PRIVATE=public)
 set_property(TARGET Benchmarks PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
 target_include_directories(Benchmarks PUBLIC src)
 target_link_libraries(Benchmarks PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)

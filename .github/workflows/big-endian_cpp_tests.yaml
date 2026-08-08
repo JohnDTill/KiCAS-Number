@@ -1,9 +1,6 @@
 name: Big-endian Tests
 description: Verify the library works on big-endian compilation/execution target
-on:
-  pull_request:
-  push:
-    branches: main
+on: push
 jobs:
   build-big-endian:
     runs-on: ubuntu-latest

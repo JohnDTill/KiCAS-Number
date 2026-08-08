@@ -77,6 +77,8 @@ TEST_CASE( "mpz_is_neg" ) {
 }
 
 TEST_CASE( "fmpz_10_pow_ui" ) {
+    char buffer[256u] = { 0 };
+
     fmpz_t val;
     fmpz_10_pow_ui(val, 3);
     REQUIRE(fmpz_get_ui(val) == 1'000);
@@ -87,7 +89,7 @@ TEST_CASE( "fmpz_10_pow_ui" ) {
     fmpz_clear(val);
 
     fmpz_10_pow_ui(val, 30);
-    REQUIRE(fmpz_get_str(nullptr, 10, val) == std::string("1000000000000000000000000000000"));
+    REQUIRE(fmpz_get_str(buffer, 10, val) == std::string("1000000000000000000000000000000"));
     fmpz_clear(val);
 
     LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
@@ -131,12 +133,14 @@ TEST_CASE( "fmpz_sizeinbase10upperbound" ) {
 }
 
 TEST_CASE( "fmpq_abs_inplace" ) {
+    char buffer[256u] = { 0 };
+
     fmpq_t val;
     fmpz_init_set_si(fmpq_numref(val), -1);
     fmpz_init_set_ui(fmpq_denref(val), 4);
-    REQUIRE(std::string(fmpq_get_str(NULL, 10, val)) == "-1/4");
+    REQUIRE(std::string(fmpq_get_str(buffer, 10, val)) == "-1/4");
     fmpq_abs_inplace(val);
-    REQUIRE(std::string(fmpq_get_str(NULL, 10, val)) == "1/4");
+    REQUIRE(std::string(fmpq_get_str(buffer, 10, val)) == "1/4");
 
     fmpz_init_set_si(fmpq_numref(val), COEFF_MIN);
     fmpq_abs_inplace(val);
