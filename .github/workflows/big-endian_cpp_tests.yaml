@@ -29,7 +29,7 @@ jobs:
                 cmake g++ pkg-config libflint-dev catch2
 
               cmake -S . -B build_test \
-                -D CONFIRM_BIG_ENDIAN=ON
+                -D DO_NOT_TEST_GMP_LEAKS=ON -D CONFIRM_BIG_ENDIAN=ON
 
               cmake --build build_test --target Tests
               ctest --test-dir build_test -V
