@@ -59,8 +59,10 @@ void mpz_init_set_x(mpz_t lhs, uintx_t rhs) {
         const int size = num_limbs - (rhs <= std::numeric_limits<uint64_t>::max());
         lhs->_mp_size = is_negative ? (-size) : size;
     }else{
-        static constexpr auto gmp_word_per_intx_word = (sizeof(uint64_t) / sizeof(mp_limb_t));
-        lhs->_mp_size = intx::count_significant_words(rhs) * gmp_word_per_intx_word;
+        if(sizeof(uint64_t) == sizeof(mp_limb_t));
+            lhs->_mp_size = intx::count_significant_words(rhs);
+        else
+            lhs->_mp_size = intx::count_significant_bytes(rhs) / sizeof(mp_limb_t);
         if(is_negative) lhs->_mp_size += 1;
     }
 }
