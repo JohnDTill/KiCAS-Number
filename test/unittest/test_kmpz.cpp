@@ -87,6 +87,8 @@ TEST_CASE( "mpz_init_set_x" ){
     LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
 
     mpz_init_set_uint128(val, uint128_t(1) << 100);
+    REQUIRE(intx::to_string(uint128_t(1) << 100) ==
+            std::string("1267650600228229401496703205376"));
     REQUIRE(val->_mp_alloc == 16/sizeof(mp_limb_t));
     REQUIRE(val->_mp_size == 16/sizeof(mp_limb_t));
     REQUIRE(mpz_get_str(buffer, 10, val) ==
@@ -104,6 +106,7 @@ TEST_CASE( "to_fmpz" ){
     fmpz_clear(&val);
 
     val = u128_to_fmpz(uint128_t(1) << 100);
+    REQUIRE(intx::to_string(uint128_t(1) << 100) == "1267650600228229401496703205376");
     REQUIRE(fmpz_get_str(buffer, 10, &val) ==
             std::string("1267650600228229401496703205376"));
     fmpz_clear(&val);
