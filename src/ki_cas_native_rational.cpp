@@ -1,16 +1,13 @@
 #include "ki_cas_native_rational.h"
 
+#include "arch_macros.h"
 #include "ki_cas_native_integer.h"
 #include <bit>
 #include <cassert>
 #include <limits>
 #include <numeric>
 
-#if !defined(__x86_64__) &&\
-    !defined(__aarch64__) &&\
-    !defined(_WIN64) &&\
-    !defined(__ppc64__) &&\
-    !defined(__s390x__) // 32-bit
+#if defined(Word32)
 static_assert(sizeof(size_t)*8 == 32);
 #include <cstdint>
 #endif
@@ -131,10 +128,7 @@ bool operator==(NativeRational a, NativeRational b) noexcept {
 
     return a_num_times_b_den_high == b_num_times_a_den_high
            && a_num_times_b_den_low == b_num_times_a_den_low;
-#elif defined(__x86_64__) ||\
-      defined(__aarch64__) ||\
-      defined(__ppc64__) ||\
-      defined(__s390x__)    // 64-bit GCC or Clang
+#elif defined(Word64)
     return static_cast<__uint128_t>(a.num) * static_cast<__uint128_t>(b.den)
            == static_cast<__uint128_t>(b.num) * static_cast<__uint128_t>(a.den);
 #else  // 32-bit
@@ -160,10 +154,7 @@ bool operator>(NativeRational a, NativeRational b) noexcept {
 
     return a_num_times_b_den_high > b_num_times_a_den_high
            || (a_num_times_b_den_high == b_num_times_a_den_high && a_num_times_b_den_low > b_num_times_a_den_low);
-#elif defined(__x86_64__) ||\
-      defined(__aarch64__) ||\
-      defined(__ppc64__) ||\
-      defined(__s390x__)    // 64-bit GCC or Clang
+#elif defined(Word64)
     return static_cast<__uint128_t>(a.num) * static_cast<__uint128_t>(b.den)
            > static_cast<__uint128_t>(b.num) * static_cast<__uint128_t>(a.den);
 #else  // 32-bit
@@ -185,10 +176,7 @@ bool operator>=(NativeRational a, NativeRational b) noexcept {
 
     return a_num_times_b_den_high > b_num_times_a_den_high
            || (a_num_times_b_den_high == b_num_times_a_den_high && a_num_times_b_den_low >= b_num_times_a_den_low);
-#elif defined(__x86_64__) ||\
-      defined(__aarch64__) ||\
-      defined(__ppc64__) ||\
-      defined(__s390x__)    // 64-bit GCC or Clang
+#elif defined(Word64)
     return static_cast<__uint128_t>(a.num) * static_cast<__uint128_t>(b.den)
            >= static_cast<__uint128_t>(b.num) * static_cast<__uint128_t>(a.den);
 #else  // 32-bit
@@ -445,7 +433,7 @@ constexpr size_t powers_of_ten[] = {
     10000000,
     100000000,
     1000000000uLL,
-#if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
+#if defined(Word64)
     10000000000,
     100000000000,
     1000000000000,
@@ -474,13 +462,7 @@ constexpr size_t powers_of_five[] = {
     390625,
     1953125,
     9765625uLL,
-// ^^^ 32-bit ^^^
-// vvv 64-bit vvv
-#if defined(__x86_64__) ||\
-    defined(__aarch64__) ||\
-    defined( _WIN64 ) ||\
-    defined(__ppc64__) ||\
-    defined(__s390x__)
+#if defined(Word64)
     48828125,
     244140625,
     1220703125,

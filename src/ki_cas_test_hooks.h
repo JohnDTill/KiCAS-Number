@@ -17,9 +17,9 @@ namespace KiCAS2 {
 #define NOEXCEPT_IN_RELEASE noexcept
 #endif
 
-/// Same as ASSERT, but only count the assertion on failure
-#define ASSERT_ONE_COUNT(x) \
-    do { const bool ok = x; if(!ok) ASSERT(ok); } while(false)
+/// Same as REQUIRE, but only count on failure
+#define REQUIRE_NO_COUNT(x) \
+    { const bool ok = x; if(!ok) REQUIRE(ok); }
 
 }
 

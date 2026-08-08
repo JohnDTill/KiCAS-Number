@@ -20,6 +20,7 @@ include_directories(${INC})
 include_directories(${SRC})
 
 set(SRC_FILES
+    ${SRC}/arch_macros.h
     ${SRC}/ki_cas_big_num_wrapper.cpp
     ${INC}/ki_cas_big_num_wrapper.h
     ${SRC}/ki_cas_native_float.cpp
