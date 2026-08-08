@@ -80,7 +80,7 @@ template<bool is_negative=false> inline void mpz_init_set_uint512(mpz_t lhs, uin
 
 template<bool is_negative=false> fmpz u128_to_fmpz(uint128_t val) {
     fmpz out = 0;
-    if(sizeof(mp_limit_t) == sizeof(uint64_t)){
+    if(sizeof(mp_limb_t) == sizeof(uint64_t)){
         if(is_negative) fmpz_neg_uiui(&out, val[1], val[0]);
         else fmpz_set_uiui(&out, val[1], val[0]);
     }else{
