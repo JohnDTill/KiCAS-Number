@@ -1,11 +1,9 @@
 name: Big-endian Tests
 description: Verify the library works on big-endian compilation/execution target
-# TODO: decide triggers
-# on:
-#   pull_request:
-#   push:
-#     branches: main
-on: push
+on:
+  pull_request:
+  push:
+    branches: main
 jobs:
   build-big-endian:
     runs-on: ubuntu-latest
@@ -31,7 +29,7 @@ jobs:
                 cmake g++ pkg-config libflint-dev catch2
 
               cmake -S . -B build_test \
-                -D DO_NOT_TEST_GMP_LEAKS=ON -D CONFIRM_BIG_ENDIAN=ON
+                -D CONFIRM_BIG_ENDIAN=ON
 
               cmake --build build_test --target Tests
               ctest --test-dir build_test -V
