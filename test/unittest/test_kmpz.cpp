@@ -21,18 +21,18 @@ TEST_CASE( "confirm_big_endian" ) {
 #endif
 
 #ifdef IS_BIG_ENDIAN
-#define BIG_ENDIAN(x) x
-#define LITTLE_ENDIAN(x)  /* Do nothing */
+#define CODE_BIG_ENDIAN(x) x
+#define CODE_LITTLE_ENDIAN(x)  /* Do nothing */
 #else
-#define BIG_ENDIAN(x)  /* Do nothing */
-#define LITTLE_ENDIAN(x) x
+#define CODE_BIG_ENDIAN(x)  /* Do nothing */
+#define CODE_LITTLE_ENDIAN(x) x
 #endif
 
 union TestUnion {
-    LITTLE_ENDIAN( uint32_t u32; )
-    LITTLE_ENDIAN( inline uint32_t& _32() noexcept { return u32; } )
-    BIG_ENDIAN( struct U32 {uint32_t padding; uint32_t u32;} u32; )
-    BIG_ENDIAN( inline uint32_t& _32() noexcept { return u32.u32; } )
+    CODE_LITTLE_ENDIAN( uint32_t u32; )
+    CODE_LITTLE_ENDIAN( inline uint32_t& _32() noexcept { return u32; } )
+    CODE_BIG_ENDIAN( struct U32 {uint32_t padding; uint32_t u32;} u32; )
+    CODE_BIG_ENDIAN( inline uint32_t& _32() noexcept { return u32.u32; } )
     uint64_t u64;
     uint128_t u128;
     uint256_t u256;
