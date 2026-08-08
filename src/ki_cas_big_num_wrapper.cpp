@@ -1,6 +1,7 @@
 #include "ki_cas_big_num_wrapper.h"
 
 #include <cassert>
+#include "arch_macros.h"
 #include "ki_cas_native_integer.h"
 #include "ki_cas_native_rational.h"
 #include <limits>
@@ -33,7 +34,7 @@ constexpr size_t powers_of_ten[] = {
     10000000,
     100000000,
     1000000000uLL,
-#if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
+#if defined(Word64)
     10000000000,
     100000000000,
     1000000000000,
@@ -115,7 +116,7 @@ fmpz fmpz_from_strview(std::string_view str) {
 
     if(str.size() < COEFF_MAX_DIGITS){
         return knownfit_str2int(str);
-#if (!defined(__x86_64__) && !defined(__aarch64__) && !defined(_WIN64)) || !defined(_MSC_VER)
+#if defined(Word32) || !defined(_MSC_VER)
     }else if(str.size() <= std::numeric_limits<WideType>::digits10){
         const DoubleInt val = knownfit_str2wideint(str);
         fmpz f = 0;

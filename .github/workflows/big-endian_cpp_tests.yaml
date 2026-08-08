@@ -1,0 +1,36 @@
+name: Big-endian Tests
+description: Verify the library works on big-endian compilation/execution target
+on:
+  pull_request:
+  push:
+    branches: main
+jobs:
+  build-big-endian:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: s390x
+
+      - name: Build and test
+        run: |
+          docker run --rm \
+            --platform linux/s390x \
+            -v "$GITHUB_WORKSPACE:/src" \
+            -w /src \
+            ubuntu:24.04 \
+            bash -euxo pipefail -c '
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                cmake g++ pkg-config libflint-dev catch2
+
+              cmake -S . -B build_test \
+                -D DO_NOT_TEST_GMP_LEAKS=ON -D CONFIRM_BIG_ENDIAN=ON
+
+              cmake --build build_test --target Tests
+              ctest --test-dir build_test -V
+            '

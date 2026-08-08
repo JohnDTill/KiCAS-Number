@@ -20,6 +20,7 @@ include_directories(${INC})
 include_directories(${SRC})
 
 set(SRC_FILES
+    ${SRC}/arch_macros.h
     ${SRC}/ki_cas_big_num_wrapper.cpp
     ${INC}/ki_cas_big_num_wrapper.h
     ${SRC}/ki_cas_native_float.cpp
@@ -69,6 +70,11 @@ OPTION(CONFIRM_32BIT OFF)
 IF(${CONFIRM_32BIT})
     ADD_DEFINITIONS(-DCONFIRM_32BIT_COMPILATION)
 ENDIF(${CONFIRM_32BIT})
+
+OPTION(CONFIRM_BIG_ENDIAN OFF)
+IF(${CONFIRM_BIG_ENDIAN})
+    ADD_DEFINITIONS(-DCONFIRM_BIG_ENDIAN)
+ENDIF(${CONFIRM_BIG_ENDIAN})
 
 enable_testing()
 add_executable(Tests

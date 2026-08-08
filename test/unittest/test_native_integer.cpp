@@ -18,6 +18,15 @@ TEST_CASE( "confirm_32bit" ) {
 }
 #endif
 
+#ifdef CONFIRM_BIG_ENDIAN
+#include <bit>
+#include <iostream>
+TEST_CASE( "confirm_big_endian" ) {
+    REQUIRE(std::endian::native == std::endian::big);
+    std::cout << "Confirmed program under test is big-endian." << std::endl;
+}
+#endif
+
 TEST_CASE( "ckd_add" ) {
     size_t result;
 
