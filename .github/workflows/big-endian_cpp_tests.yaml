@@ -28,7 +28,7 @@ jobs:
             bash -euxo pipefail -c '
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                cmake g++ libflint-dev catch2
+                cmake g++ pkg-config libflint-dev catch2
 
               cmake -S . -B build_test \
                 -D DO_NOT_TEST_GMP_LEAKS=ON -D CONFIRM_BIG_ENDIAN=ON
