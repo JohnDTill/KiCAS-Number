@@ -1,11 +1,9 @@
 name: i386 Tests
 description: Verify the library works on i386 compilation/execution target
-on: push
-# TODO: re-institute
-# on:
-#   pull_request:
-#   push:
-#     branches: main
+on:
+  pull_request:
+  push:
+    branches: main
 jobs:
   build-i386:
     runs-on: ubuntu-latest
@@ -31,10 +29,6 @@ jobs:
           load: true
           cache-from: type=gha,scope=32-bit-tests
           cache-to: type=gha,mode=max,scope=32-bit-tests
-
-      # TODO: is this needed?
-      - name: permissions
-        run: chmod +x "${GITHUB_WORKSPACE}/.github/workflows/scripts/test_32bit.sh"
 
       - name: Build and test
         run: ${GITHUB_WORKSPACE}/.github/workflows/scripts/test_32bit.sh

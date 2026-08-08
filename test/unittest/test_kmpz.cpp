@@ -132,19 +132,24 @@ TEST_CASE( "to_fmpz" ){
     LEAK_CHECK_REQUIRE(isAllGmpMemoryFreed_resetIfNot());
 }
 
-TEST_CASE( " to_chars(uint128_t) " ){
-    char buffer[64] = { 0 };
+TEST_CASE( "write_uint128" ){
+    std::string str = "x + ";
 
-    uint128_t val = (uint128_t(1) << 100);
-    to_chars(buffer, buffer+64, val);
-    REQUIRE(std::string(buffer) == "1267650600228229401496703205376");
+    SECTION("Big value"){
+        uint128_t val = (uint128_t(1) << 100);
+        write_uint128(str, val);
+        REQUIRE(str == "x + 1267650600228229401496703205376");
+    }
 
-    val = 42;
-    const auto res = to_chars(buffer, buffer+64, val);
-    *res.ptr = '\0';  // TODO: clean up this thing
-    REQUIRE(std::string(buffer) == "42");
+    SECTION("Small value"){
+        uint128_t val = 42;
+        write_uint128(str, val);
+        REQUIRE(str == "x + 42");
+    }
 
-    val = std::numeric_limits<uint128_t>::max();
-    to_chars(buffer, buffer+64, val);
-    REQUIRE(std::string(buffer) == "340282366920938463463374607431768211455");
+    SECTION("Max value"){
+        uint128_t val = std::numeric_limits<uint128_t>::max();
+        write_uint128(str, val);
+        REQUIRE(str == "x + 340282366920938463463374607431768211455");
+    }
 }
