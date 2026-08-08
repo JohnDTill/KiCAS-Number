@@ -1,6 +1,7 @@
 #include "ki_cas_native_rational.h"
 
 #include "ki_cas_native_integer.h"
+#include <bit>
 #include <cassert>
 #include <limits>
 #include <numeric>
@@ -475,6 +476,48 @@ constexpr size_t powers_of_five[] = {
 };
 static_assert(sizeof(powers_of_five)/sizeof(size_t) == std::numeric_limits<size_t>::digits10+2);
 
+bool write_native_rational_in_decimal_fmt(std::string& str, NativeRational val){
+    size_t den = val.den;
+    if(den == 1) return false;
+
+    const uint8_t num_2_factors = std::countr_zero(den);
+    den >>= num_2_factors;
+
+    uint8_t num_5_factors = 0;
+    while(den % 5 == 0){
+        den /= 5;
+        num_5_factors++;
+    }
+
+    if(den != 1) return false;
+
+    size_t scaling;
+    size_t num_decimal_places;
+    if(num_5_factors >= num_2_factors){
+        scaling = (1u << (num_5_factors - num_2_factors));
+        num_decimal_places = num_5_factors;
+    }else{
+        scaling = powers_of_five[num_2_factors - num_5_factors];
+        num_decimal_places = num_2_factors;
+    }
+
+    size_t scaled_num;
+    const size_t sze_before_num = str.size();
+    if(ckd_mul(&scaled_num, val.num, scaling)) return false;  // Don't bother with big num expansion
+    write_native_int(str, scaled_num);
+    const size_t digits_num = str.size() - sze_before_num;
+
+    if(digits_num <= num_decimal_places){
+        std::string to_insert = "0.";
+        to_insert.insert(to_insert.end(), (num_decimal_places - digits_num), '0');
+        str.insert(str.begin()+sze_before_num, to_insert.cbegin(), to_insert.cend());
+    }else{
+        str.insert(str.end()-num_decimal_places, '.');
+    }
+
+    return true;
+}
+
 bool ckd_strdecimaltail2rat(NativeRational* result, std::string_view str) noexcept {
     assert(str.at(0) == '.');
     #ifndef NDEBUG
@@ -506,24 +549,24 @@ bool ckd_strdecimaltail2rat(NativeRational* result, std::string_view str) noexce
         if(ckd_str2int(&num, digits)) return true;
         num /= 5;
 
-        uint8_t den_num_5_factors = digits.size()-1;
-        const uint8_t den_num_2_factors = digits.size();
+        uint8_t cnt_den_5_factors = digits.size()-1;
+        const uint8_t cnt_den_2_factors = digits.size();
 
         size_t num_div_5 = num / 5;
         size_t num_mod_5 = num % 5;
         while(num_mod_5 == 0){
             num = num_div_5;
-            assert(den_num_5_factors > 0);
-            den_num_5_factors--;
-            if(den_num_5_factors == 0) break;
+            assert(cnt_den_5_factors > 0);
+            cnt_den_5_factors--;
+            if(cnt_den_5_factors == 0) break;
 
             num_div_5 = num / 5;
             num_mod_5 = num % 5;
         }
 
         result->num = num;
-        const size_t den_2_factors = (1uLL << den_num_2_factors);
-        const size_t den_5_factors = powers_of_five[den_num_5_factors];
+        const size_t den_2_factors = (1uLL << cnt_den_2_factors);
+        const size_t den_5_factors = powers_of_five[cnt_den_5_factors];
 
         if(sizeof(size_t) == 4){
             // If the numerator fits, the denominator necessarily fits on 32-bit systems
@@ -549,17 +592,16 @@ bool ckd_strdecimaltail2rat(NativeRational* result, std::string_view str) noexce
         size_t num;
         if(ckd_str2int(&num, digits)) return true;
 
-        const uint8_t den_num_5_factors = digits.size();
-        uint8_t den_num_2_factors = digits.size();
+        const uint8_t cnt_num_2_factors_removed =
+            std::min<uint8_t>(std::countr_zero(num), digits.size());
+        num >>= cnt_num_2_factors_removed;
 
-        while(num % 2 == 0 && den_num_2_factors){
-            num /= 2;
-            den_num_2_factors--;
-        }
+        const uint8_t cnt_den_5_factors = digits.size();
+        const uint8_t cnt_den_2_factors = cnt_den_5_factors - cnt_num_2_factors_removed;
 
         result->num = num;
-        const size_t den_2_factors = (1uLL << den_num_2_factors);
-        const size_t den_5_factors = powers_of_five[den_num_5_factors];
+        const size_t den_2_factors = (1uLL << cnt_den_2_factors);
+        const size_t den_5_factors = powers_of_five[cnt_den_5_factors];
 
         return ckd_mul(&result->den, den_2_factors, den_5_factors);
     }
