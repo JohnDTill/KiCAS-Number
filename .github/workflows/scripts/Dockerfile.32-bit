@@ -1,0 +1,16 @@
+FROM --platform=linux/386 debian:bookworm
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      cmake \
+      g++ \
+      pkg-config \
+      libflint-dev \
+      # catch2 && \  # Old v2
+      ca-certificates && \
+      echo 'deb http://deb.debian.org/debian bookworm-backports main' \
+      > /etc/apt/sources.list.d/backports.list && \
+      apt-get update && \
+      apt-get install -y -t bookworm-backports \
+      libcatch2-dev && \
+    rm -rf /var/lib/apt/lists/*

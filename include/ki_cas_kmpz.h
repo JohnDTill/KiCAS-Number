@@ -2,6 +2,7 @@
 #define KI_CAS_KMPZ_H
 
 #include <cinttypes>
+#include <charconv>
 #include "ki_cas_test_hooks.h"
 #include <gmp.h>
 #include <flint/fmpz.h>

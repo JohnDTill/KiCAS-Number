@@ -36,7 +36,9 @@ union TestUnion {
     uint64_t u64;
     uint128_t u128;
     uint256_t u256;
-    uint512_t u512 = 0;
+    uint512_t u512;
+
+    TestUnion() noexcept : u512(0){}
 };
 
 TEST_CASE( "union assumption - reading lesser size" ) {

@@ -32,9 +32,5 @@ jobs:
           cache-from: type=gha,scope=big-endian-tests
           cache-to: type=gha,mode=max,scope=big-endian-tests
 
-      # TODO: is this needed?
-      - name: permissions
-        run: chmod +x "${GITHUB_WORKSPACE}/.github/workflows/scripts/test_big_endian.sh"
-
       - name: Build and test
         run: ${GITHUB_WORKSPACE}/.github/workflows/scripts/test_big_endian.sh
