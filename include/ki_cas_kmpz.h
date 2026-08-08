@@ -81,7 +81,10 @@ template<bool is_negative=false> fmpz u128_to_fmpz(uint128_t val) {
 }
 template<bool is_negative=false> fmpz u256_to_fmpz(uint256_t val) {
     fmpz out = 0;
-    fmpz_set_ui_array(&out, &val[0], sizeof(uint256_t)/sizeof(mp_limb_t));
+    fmpz_set_ui_array(
+        &out,
+        reinterpret_cast<const mp_limb_t*>(&val[0]),
+        sizeof(uint256_t)/sizeof(mp_limb_t));
     if(is_negative) COEFF_TO_PTR(out)->_mp_size *= -1;
     return out;
 }

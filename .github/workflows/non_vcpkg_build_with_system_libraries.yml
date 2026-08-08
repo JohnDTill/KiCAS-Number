@@ -1,9 +1,11 @@
 name: Non-vcpkg build with system libraries
 description: Verify build process using system libraries for targets which do not support vcpkg
-on:
-  pull_request:
-  push:
-    branches: main
+on: push
+# TODO: re-institute
+# on:
+#   pull_request:
+#   push:
+#     branches: main
 jobs:
   build-with-system-libraries:
     runs-on: ubuntu-latest

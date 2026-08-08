@@ -3,11 +3,36 @@
 #include "ki_cas_kmpz.h"
 
 #include "ki_cas_big_num_wrapper.h"
+#include <bit>
+#include <iostream>
 
 using namespace KiCAS2;
 
+#ifdef IS_BIG_ENDIAN
+TEST_CASE( "confirm_big_endian" ) {
+    REQUIRE(std::endian::native == std::endian::big);
+    std::cout << "Confirmed program under test is big-endian." << std::endl;
+}
+#else
+TEST_CASE( "confirm_big_endian" ) {
+    REQUIRE(std::endian::native == std::endian::little);
+    std::cout << "Confirmed program under test is little-endian." << std::endl;
+}
+#endif
+
+#ifdef IS_BIG_ENDIAN
+#define BIG_ENDIAN(x) x
+#define LITTLE_ENDIAN(x)  /* Do nothing */
+#else
+#define BIG_ENDIAN(x)  /* Do nothing */
+#define LITTLE_ENDIAN(x) x
+#endif
+
 union TestUnion {
-    uint32_t u32;
+    LITTLE_ENDIAN( uint32_t u32; )
+    LITTLE_ENDIAN( inline uint32_t& _32() noexcept { return u32; } )
+    BIG_ENDIAN( struct U32 {uint32_t padding; uint32_t u32;} u32; )
+    BIG_ENDIAN( inline uint32_t& _32() noexcept { return u32.u32; } )
     uint64_t u64;
     uint128_t u128;
     uint256_t u256;
@@ -20,12 +45,12 @@ TEST_CASE( "union assumption - reading lesser size" ) {
     REQUIRE(val.u256 == 42);
     REQUIRE(val.u128 == 42);
     REQUIRE(val.u64 == 42);
-    REQUIRE(val.u32 == 42);
+    REQUIRE(val._32() == 42);
 }
 
 TEST_CASE( "union assumption - writing lesser size" ) {
     TestUnion val;
-    val.u32 = 42;
+    val._32() = 42;
     REQUIRE(val.u512 == 42);
     REQUIRE(val.u256 == 42);
     REQUIRE(val.u128 == 42);
