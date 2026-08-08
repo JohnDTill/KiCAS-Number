@@ -57,14 +57,35 @@ void write_big_int(std::string& str, const mpz_t val);
 /// Append an fmpz_t to the end of the string
 void write_big_int(std::string& str, const fmpz_t val);
 
+/// Append an fmpz to the end of the string
+void write_big_int(std::string& str, const fmpz val);
+
+/// Append an mpz_t to the end of the string, handling the sign to write an addition term
+void write_big_int_term(std::string& str, const mpz_t val);
+
+/// Append an fmpz to the end of the string, handling the sign to write an addition term
+void write_big_int_term(std::string& str, const fmpz val);
+
 /// Append an fmpq_t to the end of the string
 template<bool typeset_fraction=false> void write_big_rational(std::string& str, const fmpq_t val);
+
+/// Append an fmpq to the end of the string
+template<bool typeset_fraction=false> void write_big_rational(std::string& str, const fmpq val);
+
+/// Append an fmpq to the end of the string, handling the sign to write an addition term
+template<bool typeset_fraction=false> void write_big_rational_term(std::string& str, const fmpq val);
+
+/// Append a rational to the end of the string as a decimal
+void write_big_rational_in_decimal_fmt(std::string& str, const fmpq val);
 
 /// Create an fmpq_t from a string of the form `(['0'-'9']+ '.' ['0'-'9']*) | ['0'-'9']* '.' ['0'-'9']+`..
 fmpq fmpq_from_decimal_str(std::string_view str);
 
 /// Create an fmpq_t from a string of the form `(['0'-'9']+ '.' ['0'-'9']*) | ['0'-'9']* '.' ['0'-'9']+`..
 fmpq fmpq_from_decimal_str(std::string_view str, size_t decimal_index);
+
+/// Create an fmpz from a string of the form `['0'-'9']+ 'e' ('+')? ['0'-'9']+`.
+fmpz fmpz_from_scientific_str(std::string_view str);
 
 /// Create an fmpq_t from a string of the form:
 /// `['0'-'9']+ ('.' ['0'-'9']*)? 'e' ('+' | '-')? ['0'-'9']+`.

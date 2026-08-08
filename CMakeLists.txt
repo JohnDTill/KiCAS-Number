@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ki_cas_numeric VERSION 0.0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(FLINT_ROOT "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
@@ -17,6 +17,7 @@ set(INC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 include_directories(${INC})
+include_directories(${SRC})
 
 set(SRC_FILES
     ${SRC}/ki_cas_big_num_wrapper.cpp
@@ -27,6 +28,7 @@ set(SRC_FILES
     ${INC}/ki_cas_native_integer.h
     ${SRC}/ki_cas_native_rational.cpp
     ${INC}/ki_cas_native_rational.h
+    ${SRC}/ki_cas_test_hooks.h
     ${INC}/ki_cas_typesetting_flags.h
 )
 
@@ -70,19 +72,20 @@ ENDIF(${CONFIRM_32BIT})
 
 enable_testing()
 add_executable(Tests
-    test/test_big_num_wrapper.cpp
-    test/test_native_float.cpp
-    test/test_native_integer.cpp
-    test/test_native_rational.cpp)
+    test/unittest/test_big_num_wrapper.cpp
+    test/unittest/test_native_float.cpp
+    test/unittest/test_native_integer.cpp
+    test/unittest/test_native_rational.cpp)
 target_include_directories(Tests PUBLIC src)
 target_link_libraries(Tests PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)
 add_test(NAME Tests COMMAND Tests)
 
 # Benchmark setup
 add_executable(Benchmarks
-    benchmark/benchmark_big_num_wrapper.cpp
-    benchmark/benchmark_native_integer.cpp
-    benchmark/benchmark_native_rational.cpp)
+    test/benchmark/unit_benchmark/benchmark_big_num_wrapper.cpp
+    test/benchmark/unit_benchmark/benchmark_native_integer.cpp
+    test/benchmark/unit_benchmark/benchmark_native_rational.cpp
+)
 set_property(TARGET Benchmarks PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
 target_include_directories(Benchmarks PUBLIC src)
 target_link_libraries(Benchmarks PRIVATE ki_cas_numeric_lib Catch2::Catch2WithMain)

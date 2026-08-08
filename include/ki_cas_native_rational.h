@@ -85,6 +85,12 @@ bool ckd_sub(NativeRational* result, NativeRational a, NativeRational b) noexcep
 /// Append a rational to the end of the string
 template<bool typeset_fraction=false> void write_native_rational(std::string& str, NativeRational val);
 
+/// Append a rational to the end of the string, handling the sign to write an addition term
+template<bool typeset_fraction=false> void write_native_rational_term(std::string& str, NativeRational val);
+
+/// Append a rational to the end of the string as a decimal
+bool write_native_rational_in_decimal_fmt(std::string& str, NativeRational val);
+
 /// Set a NativeRational from a string of the form `'.' ['0'-'9']*`.
 /// The resulting NativeRational is fully reduced.
 /// Returns true if the value is too large to fit.

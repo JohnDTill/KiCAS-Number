@@ -22,32 +22,32 @@ void mpz_neg_inplace(mpz_t rop) noexcept {
     rop->_mp_size *= -1;
 }
 
-void fmpz_10_pow_ui(fmpz_t f, ulong rhs) {
-    constexpr size_t powers_of_ten[] = {
-        1,
-        10,
-        100,
-        1000,
-        10000,
-        100000,
-        1000000,
-        10000000,
-        100000000,
-        1000000000uLL,
+constexpr size_t powers_of_ten[] = {
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000uLL,
 #if defined(__x86_64__) || defined(__aarch64__) || defined( _WIN64 )  // 64-bit
-        10000000000,
-        100000000000,
-        1000000000000,
-        10000000000000,
-        100000000000000,
-        1000000000000000,
-        10000000000000000,
-        100000000000000000,
-        1000000000000000000,
-        10000000000000000000uLL,
+    10000000000,
+    100000000000,
+    1000000000000,
+    10000000000000,
+    100000000000000,
+    1000000000000000,
+    10000000000000000,
+    100000000000000000,
+    1000000000000000000,
+    10000000000000000000uLL,
 #endif
-    };
+};
 
+void fmpz_10_pow_ui(fmpz_t f, ulong rhs) {
     // Check this rather than specify it to make sure the macro worked
     static_assert(sizeof(powers_of_ten)/sizeof(size_t) == std::numeric_limits<size_t>::digits10+1);
 
@@ -171,6 +171,37 @@ void write_big_int(std::string& str, const fmpz_t val) {
     str.resize(null_terminator_index);
 }
 
+void write_big_int(std::string &str, const fmpz val) {
+    write_big_int(str, &val);
+}
+
+void write_big_int_term(std::string& str, const mpz_t val) {
+    assert(str[str.size()-2] == '+');
+    assert(str[str.size()-1] == ' ');
+
+    MP_INT big_int = *val;
+    if(big_int._mp_size < 0){
+        str[str.size()-2] = '-';
+        big_int._mp_size = -big_int._mp_size;
+        write_big_int(str, &big_int);
+        big_int._mp_size = -big_int._mp_size;
+    }else{
+        write_big_int(str, &big_int);
+    }
+}
+
+void write_big_int_term(std::string& str, const fmpz val) {
+    assert(str[str.size()-2] == '+');
+    assert(str[str.size()-1] == ' ');
+
+    if(COEFF_IS_MPZ(val)){
+        write_big_int_term(str, COEFF_TO_PTR(val));
+    }else{
+        str[str.size()-2] = (val > 0) ? '+' : '-';
+        write_native_int(str, std::abs(val));
+    }
+}
+
 static void write_big_int(std::string& str, const fmpz_t val, bool is_negative) {
     // Resize str to ensure sufficient capacity for the largest possible number
     static constexpr size_t base = 10;
@@ -222,6 +253,29 @@ template<bool typeset_fraction> void write_big_rational(std::string& str, const 
 }
 template void write_big_rational<false>(std::string&, const fmpq_t);
 template void write_big_rational<true>(std::string&, const fmpq_t);
+
+template<bool typeset_fraction> void write_big_rational(std::string& str, const fmpq val){
+    write_big_rational<typeset_fraction>(str, &val);
+}
+template void write_big_rational<false>(std::string&, const fmpq);
+template void write_big_rational<true>(std::string&, const fmpq);
+
+template<bool typeset_fraction> void write_big_rational_term(std::string& str, const fmpq val){
+    assert(str[str.size()-2] == '+');
+    assert(str[str.size()-1] == ' ');
+
+    if(fmpq_sgn(&val) >= 0){
+        write_big_rational<typeset_fraction>(str, val);
+    }else{
+        str.pop_back();
+        str.back() = '-';
+        const size_t incorrect_sign_index = str.size();
+        write_big_rational<typeset_fraction>(str, val);
+        str[incorrect_sign_index] = ' ';
+    }
+}
+template void write_big_rational_term<false>(std::string&, const fmpq);
+template void write_big_rational_term<true>(std::string&, const fmpq);
 
 inline static fmpq conv(NativeRational val) {
     fmpq ans {0, 0};
@@ -287,6 +341,42 @@ fmpq fmpq_from_scientific_str(std::string_view str) {
     const auto op = hasNegativePrefix ? &fmpq_div_fmpz : &fmpq_mul_fmpz;
     (*op)(&lhs, &lhs, &tenPower);
     fmpz_clear(&tenPower);
+
+    return lhs;
+}
+
+fmpz fmpz_from_scientific_str(std::string_view str) {
+    NativeRational result;
+
+    const size_t e_index = str.find('e');
+    assert(e_index != std::string::npos);
+
+    fmpz lhs = fmpz_from_strview(str.substr(0, e_index));
+
+    size_t exp_start = e_index + 1;
+
+    const bool hasNegativePrefix = (str[exp_start] == '-');
+    assert(!hasNegativePrefix);
+    const bool hasPositivePrefix = (str[exp_start] == '+');
+    exp_start += hasPositivePrefix;
+    const std::string_view exp_digits = str.substr(exp_start);
+
+    fmpz exp = fmpz_from_strview(exp_digits);
+    if(!fmpz_fits_si(&exp)){
+        fmpz tenPower = 0;
+        fmpz_10_pow_fmpz(&tenPower, &exp);
+        fmpz_clear(&exp);
+        fmpz_mul(&lhs, &lhs, &tenPower);
+        fmpz_clear(&tenPower);
+    }else if(exp > std::numeric_limits<size_t>::digits10){
+        fmpz tenPower = 0;
+        assert(fmpz_sgn(&exp) == 1);
+        fmpz_10_pow_ui(&tenPower, exp);
+        fmpz_mul(&lhs, &lhs, &tenPower);
+        fmpz_clear(&tenPower);
+    }else{
+        fmpz_mul_ui(&lhs, &lhs, powers_of_ten[exp]);;
+    }
 
     return lhs;
 }
