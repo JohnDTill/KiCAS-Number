@@ -159,4 +159,18 @@ TEST_CASE( "write_uint128" ){
         write_uint128(str, val);
         REQUIRE(str == "x + 99999999999999999999999999999999999999");
     }
+
+    SECTION("Zero padding (1)"){
+        uint128_t val = intx::from_string<uint128_t>(
+            "12345000000000000000054321");
+        write_uint128(str, val);
+        REQUIRE(str == "x + 12345000000000000000054321");
+    }
+
+    SECTION("Zero padding (2)"){
+        uint128_t val = intx::from_string<uint128_t>(
+            "300000000000012345000000000000000054321");
+        write_uint128(str, val);
+        REQUIRE(str == "x + 300000000000012345000000000000000054321");
+    }
 }

@@ -4,15 +4,17 @@
 
 namespace KiCAS2 {
 
-static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexcept {
+static const char* to_chars(char* begin, char* end, uint128_t x) noexcept {
     static auto printFilled = [](char*& begin, char* end, uint64_t val) noexcept {
         const auto result = std::to_chars(begin, end, val);
         assert(result.ec == std::errc());
         const size_t digits = result.ptr - begin;
         const size_t to_fill = std::numeric_limits<uint64_t>::digits10 - digits;
-        std::memmove(begin+to_fill, begin, digits);
+        char* move_loc = begin+to_fill;
+        assert(move_loc + digits <= end);
+        std::memmove(move_loc, begin, digits);
         std::memset(begin, '0', to_fill);
-        begin = result.ptr;
+        begin += std::numeric_limits<uint64_t>::digits10;
     };
 
     static constexpr auto maxBase10Representable = []() noexcept {
@@ -24,7 +26,9 @@ static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexce
     constexpr uint128_t max1div = uint128_t(maxBase10)*std::numeric_limits<uint64_t>::max();
 
     if(x[1] == 0){
-        return std::to_chars(begin, end, x[0]);
+        const auto result = std::to_chars(begin, end, x[0]);
+        assert(result.ec == std::errc());
+        return result.ptr;
     }else if(x <= max1div){
         const auto dr = udivrem(x, maxBase10);
         assert(dr.quot[1] == 0);
@@ -33,7 +37,7 @@ static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexce
         assert(result.ec == std::errc());
         begin = result.ptr;
         printFilled(begin, end, dr.rem[0]);
-        return { begin, std::errc {} };
+        return begin;
     }else{
         const auto dr1 = udivrem(x, maxBase10);
         const auto dr2 = udivrem(dr1.quot, maxBase10);
@@ -44,7 +48,7 @@ static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexce
         begin = result.ptr;
         printFilled(begin, end, dr2.rem[0]);
         printFilled(begin, end, dr1.rem[0]);
-        return { begin, std::errc {} };
+        return begin;
     }
 }
 
@@ -126,9 +130,8 @@ static void write_uintx(std::string& str, uintx_t val) {
 void write_uint128(std::string& str, uint128_t val) {
     constexpr size_t max_digits = std::numeric_limits<uint128_t>::digits10 + 1;
     char buffer[max_digits];
-    const std::to_chars_result result = to_chars(buffer, buffer + max_digits, val);
-    assert(result.ec == std::errc());
-    str.append(buffer, result.ptr - buffer);
+    const char* end = to_chars(buffer, buffer + max_digits, val);
+    str.append(buffer, end - buffer);
 }
 
 void write_uint256(std::string& str, uint256_t val) {
