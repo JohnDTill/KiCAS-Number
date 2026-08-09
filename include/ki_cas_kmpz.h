@@ -1,6 +1,10 @@
 #ifndef KI_CAS_KMPZ_H
 #define KI_CAS_KMPZ_H
 
+#ifdef _MSC_VER
+#include <malloc.h>  // MSC dependencies for GMP
+#endif
+
 #include <cinttypes>
 #include "ki_cas_test_hooks.h"
 #include <gmp.h>

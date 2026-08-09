@@ -21,7 +21,7 @@ static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexce
         return val;
     };
     constexpr uint64_t maxBase10 = maxBase10Representable();
-    constexpr uint128_t max1div = uint128_t(maxBase10)*std::numeric_limits<size_t>::max();
+    constexpr uint128_t max1div = uint128_t(maxBase10)*std::numeric_limits<uint64_t>::max();
 
     if(x[1] == 0){
         return std::to_chars(begin, end, x[0]);
