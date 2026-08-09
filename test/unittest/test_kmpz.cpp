@@ -152,4 +152,11 @@ TEST_CASE( "write_uint128" ){
         write_uint128(str, val);
         REQUIRE(str == "x + 340282366920938463463374607431768211455");
     }
+
+    SECTION("One digit less than max value"){
+        uint128_t val = intx::from_string<uint128_t>(
+            "99999999999999999999999999999999999999");
+        write_uint128(str, val);
+        REQUIRE(str == "x + 99999999999999999999999999999999999999");
+    }
 }

@@ -4,31 +4,48 @@
 
 namespace KiCAS2 {
 
-static std::to_chars_result to_chars(char *begin, char *end, uint128_t x) noexcept {
-    if (x[1] == 0) return std::to_chars(begin, end, x[0]);
-
-    /// The greatest power of 10 that fits into a 64-bit integer is 10^19.
-    constexpr uint64_t exp10_19 = 10000000000000000000ull;
-    constexpr int lower_max_digits = 19;
-    char* const initial_begin = begin;
-
-    while(x[1] != 0) {
-        const auto divrem_res = udivrem(x, exp10_19);
-        x = divrem_res.quot;
-        const uint64_t rem = static_cast<uint64_t>(divrem_res.rem);
-
-        const auto result = std::to_chars(begin, end, rem);
+static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexcept {
+    static auto printFilled = [](char*& begin, char* end, uint64_t val) noexcept {
+        const auto result = std::to_chars(begin, end, val);
         assert(result.ec == std::errc());
-        std::reverse(begin, result.ptr);
-        std::memset(result.ptr, '0', size_t(begin + lower_max_digits - result.ptr));
-        begin += lower_max_digits;
-    }
+        const size_t digits = result.ptr - begin;
+        const size_t to_fill = std::numeric_limits<uint64_t>::digits10 - digits;
+        std::memmove(begin+to_fill, begin, digits);
+        std::memset(begin, '0', to_fill);
+        begin = result.ptr;
+    };
 
-    const auto result = std::to_chars(begin, end, x[0]);
-    assert(result.ec == std::errc());
-    std::reverse(begin, result.ptr);
-    std::reverse(initial_begin, result.ptr);
-    return result;
+    static constexpr auto maxBase10Representable = []() noexcept {
+        uint64_t val = 1;
+        while(val < std::numeric_limits<uint64_t>::max()/10) val *= 10;
+        return val;
+    };
+    constexpr uint64_t maxBase10 = maxBase10Representable();
+    constexpr uint128_t max1div = uint128_t(maxBase10)*std::numeric_limits<size_t>::max();
+
+    if(x[1] == 0){
+        return std::to_chars(begin, end, x[0]);
+    }else if(x <= max1div){
+        const auto dr = udivrem(x, maxBase10);
+        assert(dr.quot[1] == 0);
+        assert(dr.quot[0] != 0);
+        const auto result = std::to_chars(begin, end, dr.quot[0]);
+        assert(result.ec == std::errc());
+        begin = result.ptr;
+        printFilled(begin, end, dr.rem[0]);
+        return { begin, std::errc {} };
+    }else{
+        const auto dr1 = udivrem(x, maxBase10);
+        const auto dr2 = udivrem(dr1.quot, maxBase10);
+        assert(dr2.quot[1] == 0);
+        assert(dr2.quot[0] != 0);
+        const auto result = std::to_chars(begin, end, dr2.quot[0]);
+        assert(result.ec == std::errc());
+        begin = result.ptr;
+        printFilled(begin, end, dr2.rem[0]);
+        printFilled(begin, end, dr1.rem[0]);
+        return { begin, std::errc {} };
+    }
 }
 
 template<typename uintx_t, bool is_negative=false>
