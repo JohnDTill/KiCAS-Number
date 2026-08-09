@@ -8,5 +8,7 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
+      - id: permissions
+        run: chmod +x "${GITHUB_WORKSPACE}/.github/workflows/scripts/to-do_check.sh"
       - id: check
         run: ${GITHUB_WORKSPACE}/.github/workflows/scripts/to-do_check.sh
