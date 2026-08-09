@@ -4,27 +4,29 @@
 
 namespace KiCAS2 {
 
-/// The greatest power of 10 that fits into a 64-bit integer is 10^19.
-constexpr uint64_t exp10_19 = 10'000'000'000'000'000'000ull;
-static_assert(std::numeric_limits<uint64_t>::max()/10 < exp10_19);
-
-static inline void printFilled(char*& begin, char* end, uint64_t val) noexcept {
-    const auto result = std::to_chars(begin, end, val);
-    assert(result.ec == std::errc());
-    const size_t digits = result.ptr - begin;
-    const size_t to_fill = 19 - digits;
-    std::memmove(begin+to_fill, begin, digits);
-    std::memset(begin, '0', to_fill);
-    begin = result.ptr;
-}
-
 static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexcept {
-    constexpr uint128_t max1div = uint128_t(exp10_19)*std::numeric_limits<size_t>::max();
+    static auto printFilled = [](char*& begin, char* end, uint64_t val) noexcept {
+        const auto result = std::to_chars(begin, end, val);
+        assert(result.ec == std::errc());
+        const size_t digits = result.ptr - begin;
+        const size_t to_fill = std::numeric_limits<uint64_t>::digits10 - digits;
+        std::memmove(begin+to_fill, begin, digits);
+        std::memset(begin, '0', to_fill);
+        begin = result.ptr;
+    };
+
+    static constexpr auto maxBase10Representable = []() noexcept {
+        uint64_t val = 1;
+        while(val < std::numeric_limits<uint64_t>::max()/10) val *= 10;
+        return val;
+    };
+    constexpr uint64_t maxBase10 = maxBase10Representable();
+    constexpr uint128_t max1div = uint128_t(maxBase10)*std::numeric_limits<size_t>::max();
 
     if(x[1] == 0){
         return std::to_chars(begin, end, x[0]);
     }else if(x <= max1div){
-        const auto dr = udivrem(x, exp10_19);
+        const auto dr = udivrem(x, maxBase10);
         assert(dr.quot[1] == 0);
         assert(dr.quot[0] != 0);
         const auto result = std::to_chars(begin, end, dr.quot[0]);
@@ -33,8 +35,8 @@ static std::to_chars_result to_chars(char* begin, char* end, uint128_t x) noexce
         printFilled(begin, end, dr.rem[0]);
         return { begin, std::errc {} };
     }else{
-        const auto dr1 = udivrem(x, exp10_19);
-        const auto dr2 = udivrem(dr1.quot, exp10_19);
+        const auto dr1 = udivrem(x, maxBase10);
+        const auto dr2 = udivrem(dr1.quot, maxBase10);
         assert(dr2.quot[1] == 0);
         assert(dr2.quot[0] != 0);
         const auto result = std::to_chars(begin, end, dr2.quot[0]);
